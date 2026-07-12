@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Laravel Multipart</title></head>
+<body>
+<h2>Test POST ke /test-ajukan (Laravel, tanpa auth)</h2>
+<p>Ini mencoba POST langsung ke Laravel TestController untuk cek apakah multipart crash.</p>
+<form action="http://127.0.0.1:8000/test-ajukan" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="_token" id="csrfToken" value="">
+    <p>Jenis: <input type="text" name="jenis_surat" value="Surat Test" required></p>
+    <p>Nama: <input type="text" name="nama" value="Test" required></p>
+    <p>File: <input type="file" name="file"></p>
+    <button type="submit">Kirim ke Laravel Test</button>
+</form>
+<div id="result"></div>
+
+<script>
+// Ambil CSRF token dari halaman (bisa juga fetch GET dulu)
+fetch('http://127.0.0.1:8000/login').then(r => r.text()).then(t => {
+    const match = t.match(/name="_token" value="([^"]+)"/);
+    if (match) document.getElementById('csrfToken').value = match[1];
+});
+</script>
+</body>
+</html>

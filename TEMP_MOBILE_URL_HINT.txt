@@ -1,0 +1,15 @@
+TEMP: Mobile URL troubleshooting
+
+Backend endpoint: /api/mobile/login (routes/api.php)
+
+Flutter code (flutter_mobile/lib/main.dart):
+- web:  http://127.0.0.1:8000/api/mobile/login
+- non-web: http://10.0.2.2:8000/api/mobile/login
+
+Rules:
+- Android emulator -> 10.0.2.2 works
+- Android/iOS physical device -> 10.0.2.2/127.0.0.1 will NOT work; use LAN IP of PC hosting Laravel, e.g. http://192.168.1.10:8000/api/mobile/login
+
+Also ensure:
+- User role used for mobile login must be 'warga' (AuthController@mobileLogin returns 403 for non-warga).
+

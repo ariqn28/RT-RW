@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240" height="100" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RT/RW Logo">
+  <defs>
+    <linearGradient id="roofGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1f8b3a"/>
+      <stop offset="100%" stop-color="#2a95d6"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="none" stroke-width="1">
+    <path d="M30 70 L60 40 L100 40 L130 70" fill="none" stroke="#f28c22" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M40 70 L40 90 L120 90 L120 70" fill="none" stroke="#f28c22" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 40 L85 15 L110 40" fill="none" stroke="url(#roofGrad)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 40 L110 40" fill="none" stroke="#2a95d6" stroke-width="8" stroke-linecap="round"/>
+    <path d="M50 82 L50 60" stroke="#f28c22" stroke-width="8" stroke-linecap="round"/>
+    <path d="M80 82 L80 60" stroke="#f28c22" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="136" y="50" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#f28c22">RT</text>
+  <text x="136" y="82" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#2a95d6">/RW</text>
+</svg>
