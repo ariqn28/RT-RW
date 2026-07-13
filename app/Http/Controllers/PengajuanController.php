@@ -19,6 +19,25 @@ class PengajuanController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+    // --- TAMBAHAN UNTUK WARGA (MULAI) ---
+    if ($user->role === 'warga') {
+        $counts = [
+            'pending' => Pengajuan::where('user_id', $user->id)->where('status', 'baru')->count(),
+            'approved' => Pengajuan::where('user_id', $user->id)->where('status', 'diterima')->count(),
+            'rejected' => Pengajuan::where('user_id', $user->id)->where('status', 'ditolak')->count(),
+            'total' => Pengajuan::where('user_id', $user->id)->count(),
+        ];
+
+        // Mengarahkan ke view khusus warga yang sudah kita buat
+        return view('warga.dashboard_warga', compact('counts'));
+    }
+    // --- TAMBAHAN UNTUK WARGA (SELESAI) ---
+
+    // --- LOGIKA LAMA (JANGAN DIHAPUS) ---
+    $isWarga = $user->role === 'warga';
+    
+        $user = auth()->user();
         $isWarga = $user->role === 'warga';
 
         if ($user->role === 'admin') {
@@ -49,7 +68,7 @@ class PengajuanController extends Controller
                 ->orderByDesc('total')
                 ->limit(5)
                 ->get();
-            
+
             return view('admin.rt.index', compact('pengajuan', 'pending', 'counts', 'jenisRekap'));
         } elseif ($user->role === 'rw') {
             $pengajuan = Pengajuan::whereIn('status', ['disetujui_rt', 'diterima'])->latest()->paginate(10);
@@ -60,7 +79,7 @@ class PengajuanController extends Controller
                 'rejected' => Pengajuan::where('status', 'ditolak')->count(),
                 'total' => Pengajuan::count(),
             ];
-            
+
             return view('admin.rw.index', compact('pengajuan', 'rtPending', 'counts'));
         }
 
@@ -85,14 +104,14 @@ class PengajuanController extends Controller
                 'rt_pending' => Pengajuan::where('status', 'disetujui_rt')->count(),
                 'total' => Pengajuan::count(),
             ];
-            
+
             // Rekap jenis surat
             $jenisRekap = Pengajuan::select('jenis_surat', DB::raw('count(*) as total'))
                 ->groupBy('jenis_surat')
                 ->orderByDesc('total')
                 ->limit(5)
                 ->get();
-                
+
             // RW specific: pending from RT
             if ($user->role === 'rw') {
                 $rtPending = Pengajuan::where('status', 'disetujui_rt')
@@ -139,7 +158,7 @@ class PengajuanController extends Controller
             if ($request->hasFile('file')) {
                 Log::info('Processing file upload');
                 $file = $request->file('file');
-                
+
                 Log::info('File info', [
                     'name' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),

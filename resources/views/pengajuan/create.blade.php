@@ -1,103 +1,82 @@
-@extends('layouts.app')
+{{-- @extends('layouts.app')
+
+@section('content') --}}
+@extends('layouts.warga_app')
 
 @section('content')
-<div class="card card-panel shadow-sm p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h4 mb-1">Ajukan Surat</h2>
-            <p class="text-muted mb-0">Isi data pengajuan dan lampirkan keterangan yang diperlukan.</p>
-        </div>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Kembali</a>
+<div class="px-4 py-6 pb-24">
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Ajukan Surat</h2>
+        <p class="text-gray-500 text-sm">Lengkapi data di bawah ini untuk permohonan Anda.</p>
     </div>
 
     @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-2xl">
+        <ul class="list-disc pl-5 text-sm">
             @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
+                <li>{{ $error }}</li>
             @endforeach
         </ul>
     </div>
     @endif
 
-    @if (session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-    @endif
-
-    @if (session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-    @endif
-
-    <form action="{{ route('pengajuan.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('pengajuan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Jenis Surat</label>
-                <select name="jenis_surat" class="form-select @error('jenis_surat') is-invalid @enderror" required>
-                    <option value="">Pilih Jenis Surat</option>
-                    <option value="Surat Keterangan Domisili" {{ old('jenis_surat') == 'Surat Keterangan Domisili' ? 'selected' : '' }}>Surat Keterangan Domisili</option>
-                    <option value="Surat Pengantar" {{ old('jenis_surat') == 'Surat Pengantar' ? 'selected' : '' }}>Surat Pengantar</option>
-                    <option value="Surat Keterangan Tidak Mampu" {{ old('jenis_surat') == 'Surat Keterangan Tidak Mampu' ? 'selected' : '' }}>Surat Keterangan Tidak Mampu</option>
-                    <option value="Surat Izin Keramaian" {{ old('jenis_surat') == 'Surat Izin Keramaian' ? 'selected' : '' }}>Surat Izin Keramaian</option>
-                    <option value="Surat Keterangan Usaha" {{ old('jenis_surat') == 'Surat Keterangan Usaha' ? 'selected' : '' }}>Surat Keterangan Usaha</option>
-                    <option value="Surat Keterangan Pernikahan" {{ old('jenis_surat') == 'Surat Keterangan Pernikahan' ? 'selected' : '' }}>Surat Keterangan Pernikahan</option>
-                    <option value="Surat Pengantar KTP/KK" {{ old('jenis_surat') == 'Surat Pengantar KTP/KK' ? 'selected' : '' }}>Surat Pengantar KTP/KK</option>
-                    <option value="Surat Keterangan Kelahiran" {{ old('jenis_surat') == 'Surat Keterangan Kelahiran' ? 'selected' : '' }}>Surat Keterangan Kelahiran</option>
-                    <option value="Surat Keterangan Kematian" {{ old('jenis_surat') == 'Surat Keterangan Kematian' ? 'selected' : '' }}>Surat Keterangan Kematian</option>
-                    <option value="Lainnya" {{ old('jenis_surat') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Jenis Surat</label>
+                <select name="jenis_surat" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all" required>
+                    <option value="">-- Pilih Jenis Surat --</option>
+                    <option value="Surat Keterangan Domisili">Surat Keterangan Domisili</option>
+                    <option value="Surat Pengantar">Surat Pengantar</option>
+                    <option value="Surat Keterangan Tidak Mampu">Surat Keterangan Tidak Mampu</option>
+                    <option value="Surat Izin Keramaian">Surat Izin Keramaian</option>
+                    <option value="Surat Keterangan Usaha">Surat Keterangan Usaha</option>
+                    <option value="Lainnya">Lainnya</option>
                 </select>
-                @error('jenis_surat')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Nama</label>
-                <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" required>
-                @error('nama')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">NIK</label>
-                <input type="text" name="nik" class="form-control @error('nik') is-invalid @enderror" value="{{ old('nik') }}" required>
-                @error('nik')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Alamat</label>
-                <input type="text" name="alamat" class="form-control" value="{{ old('alamat') }}" placeholder="Contoh: Jl. Merpati No. 12" required>
-                @error('alamat')
-                    <div class="text-danger">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col-12">
-                <label class="form-label">Upload Berkas (Opsional)</label>
-                <input type="file" name="file" id="fileUpload" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                <small class="text-muted">Format: PDF, DOC, DOCX, JPG, PNG. Maksimal 1MB. Jika tidak ada file, biarkan kosong.</small>
-                <div id="fileError" class="text-danger mt-1" style="display:none;"></div>
-                @error('file')
-                    <div class="text-danger">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col-12">
-                <label class="form-label">Alasan</label>
-                <textarea name="alasan" id="alasanTextarea" class="form-control @error('alasan') is-invalid @enderror" rows="4" placeholder="Contoh: Saya mengajukan surat keterangan domisili untuk keperluan pembuatan KTP..." required>{{ old('alasan') }}</textarea>
-                @error('alasan')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
             </div>
 
-        <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-success px-4">Kirim</button>
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-4">Batal</a>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                <input type="text" name="nama" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="{{ old('nama', auth()->user()->name) }}" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">NIK</label>
+                <input type="number" name="nik" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alamat</label>
+                <input type="text" name="alamat" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alasan Pengajuan</label>
+                <textarea name="alasan" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" required>{{ old('alasan') }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Upload Berkas</label>
+                <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors">
+                    <input type="file" name="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.jpeg,.png">
+                    <div class="text-emerald-600 text-3xl mb-2">📁</div>
+                    <p class="text-xs text-gray-500">Klik untuk upload (PDF, JPG, PNG)</p>
+                </div>
+                <small class="text-gray-400 text-[10px] mt-1 block">Maksimal 1MB.</small>
+            </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-200 transition-all">Kirim Pengajuan</button>
+            <a href="{{ route('dashboard') }}" class="w-1/3 bg-gray-100 text-gray-600 font-bold py-4 rounded-2xl text-center hover:bg-gray-200 transition-all">Batal</a>
         </div>
     </form>
 </div>
+
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\IuranController;
+use App\Http\Controllers\InformasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +36,7 @@ Route::middleware('auth')->group(function () {
     // Admin routes
     Route::middleware('role:admin,rt,rw')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', 'App\\Http\\Controllers\\UserController');
-    }); 
+    });
 
     // RT/RW dashboards (allow rt,rw access)
     Route::middleware('role:rt,rw')->group(function () {
@@ -69,3 +71,14 @@ Route::middleware('auth')->group(function () {
     // Hapus pengajuan
     Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->name('status.destroy');
 });
+
+
+// Pastikan route ini ada di dalam group 'auth'
+Route::middleware(['auth'])->group(function () {
+    Route::get('/iuran', [IuranController::class, 'index'])->name('iuran.index');
+});
+   Route::middleware(['auth'])->group(function () {
+    // ... rute lainnya
+    Route::get('/informasi', [InformasiController::class, 'index'])->name('informasi.index');
+});
+
