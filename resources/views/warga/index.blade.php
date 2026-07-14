@@ -18,6 +18,7 @@
             <div class="card shadow-lg border-0 rounded-4">
                 <div class="card-body p-4 p-md-5">
                     <h1 class="h3 fw-bold mb-3">Portal Warga RT/RW</h1>
+                    
                     <p class="text-muted mb-4">Akses login web dan integrasi mobile untuk akun warga.</p>
 
                     <div class="mb-4">

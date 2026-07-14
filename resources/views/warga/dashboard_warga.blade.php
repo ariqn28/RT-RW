@@ -1,6 +1,34 @@
 @extends('layouts.warga_app')
 
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#059669', // Emerald 600 senada dengan dashboard
+
+                // --- Konfigurasi agar cantik di HP ---
+                width: '300px',         // Lebar popup tetap di HP/Desktop
+                padding: '1.25rem',
+                buttonsStyling: true,
+                customClass: {
+                    title: 'text-lg font-bold',
+                    confirmButton: 'rounded-full px-8 py-2'
+                },
+                // Efek muncul halus
+                showClass: {
+                    popup: 'swal2-show'
+                }
+            });
+        });
+    </script>
+@endif
 <div class="px-4 py-6 pb-24 space-y-8">
 
     <div class="flex justify-between items-center">
@@ -39,24 +67,29 @@
 
     <div>
         <h3 class="font-bold text-gray-800 mb-3">Status Pengajuan</h3>
-        <div class="grid grid-cols-4 gap-2">
-            @php
-                $statuses = [
-                    'TUNGGU' => ['color' => 'amber', 'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
-                    'SETUJU' => ['color' => 'emerald', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
-                    'TOLAK' => ['color' => 'red', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'],
-                    'SELESAI' => ['color' => 'blue', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z']
-                ];
-            @endphp
-            @foreach($statuses as $label => $data)
-            <div class="bg-white p-3 rounded-2xl border border-gray-100 text-center shadow-sm">
-                <svg class="w-6 h-6 mx-auto mb-1 text-{{ $data['color'] }}-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $data['icon'] }}" />
-                </svg>
-                <div class="text-lg font-bold text-gray-800">0</div>
-                <div class="text-[9px] font-bold text-{{ $data['color'] }}-600">{{ $label }}</div>
-            </div>
-            @endforeach
+        <div class="grid grid-cols-3 gap-2">
+           @php
+    $statuses = [
+        'TUNGGU'  => ['color' => 'amber', 'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
+        'SETUJU'  => ['color' => 'emerald', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+        'TOLAK'   => ['color' => 'red', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'],
+    ];
+@endphp
+
+@foreach($statuses as $label => $data)
+<div class="bg-white p-3 rounded-2xl border border-gray-100 text-center shadow-sm">
+    <svg class="w-6 h-6 mx-auto mb-1 text-{{ $data['color'] }}-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $data['icon'] }}" />
+    </svg>
+
+    <!-- Bagian ini yang diubah agar menampilkan angka dinamis -->
+    <div class="text-lg font-bold text-gray-800">
+        {{ $counts[$label] ?? 0 }}
+    </div>
+
+    <div class="text-[9px] font-bold text-{{ $data['color'] }}-600">{{ $label }}</div>
+</div>
+@endforeach
         </div>
     </div>
 

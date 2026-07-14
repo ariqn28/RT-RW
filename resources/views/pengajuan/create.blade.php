@@ -10,15 +10,11 @@
         <p class="text-gray-500 text-sm">Lengkapi data di bawah ini untuk permohonan Anda.</p>
     </div>
 
-    @if ($errors->any())
-    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-2xl">
-        <ul class="list-disc pl-5 text-sm">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+    @if ($errors->has('file'))
+    <div class="alert alert-danger">
+        {{ $errors->first('file') }}
     </div>
-    @endif
+@endif
 
     <form action="{{ route('pengajuan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
@@ -59,15 +55,22 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Upload Berkas</label>
-                <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors">
-                    <input type="file" name="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.jpeg,.png">
-                    <div class="text-emerald-600 text-3xl mb-2">📁</div>
-                    <p class="text-xs text-gray-500">Klik untuk upload (PDF, JPG, PNG)</p>
-                </div>
-                <small class="text-gray-400 text-[10px] mt-1 block">Maksimal 1MB.</small>
-            </div>
-        </div>
+    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Upload Berkas</label>
+
+    <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors">
+        <input type="file" id="fileUpload" name="file" class="hidden">
+
+        <label for="fileUpload" class="cursor-pointer">
+            <div class="text-emerald-600 text-3xl mb-2">📁</div>
+            <p class="text-xs text-gray-500">Klik untuk upload (PDF, JPG, PNG)</p>
+        </label>
+
+        <div id="fileNameDisplay" class="mt-3 text-xs font-semibold text-emerald-600 break-all"></div>
+        <div id="fileError" class="mt-2 text-xs text-red-500" style="display:none;"></div>
+    </div>
+
+    <small class="text-gray-400 text-[10px] mt-1 block">Maksimal 2MB.</small>
+</div>
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-200 transition-all">Kirim Pengajuan</button>
@@ -110,22 +113,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Validasi ukuran file upload (maksimal 1MB)
-    const fileInput = document.getElementById('fileUpload');
-    const fileError = document.getElementById('fileError');
+   const fileInput = document.getElementById('fileUpload');
+const fileError = document.getElementById('fileError');
+// Tambahkan elemen untuk menampilkan nama file (buat di HTML Anda <span id="fileNameDisplay"></span>)
+const fileNameDisplay = document.getElementById('fileNameDisplay');
 
-    fileInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            const maxSize = 1 * 1024 * 1024; // 1MB
-            if (file.size > maxSize) {
-                fileError.textContent = 'Ukuran file melebihi 1MB. File Anda: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB. Silakan kompres atau pilih file yang lebih kecil.';
-                fileError.style.display = 'block';
-                this.value = '';
-            } else {
-                fileError.style.display = 'none';
-            }
+fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        // Ubah maxSize menjadi 2MB (2 * 1024 * 1024)
+        const maxSize = 2 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+            fileError.textContent = 'Ukuran file terlalu besar (Max 2MB). File Anda: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB.';
+            fileError.style.display = 'block';
+            fileError.style.color = 'red';
+            fileNameDisplay.textContent = ''; // Hapus nama file jika error
+            this.value = ''; // Reset input
+        } else {
+            fileError.style.display = 'none';
+            // Berikan tanda berhasil pilih file
+            fileNameDisplay.textContent = 'File terpilih: ' + file.name;
+            fileNameDisplay.style.color = 'green';
+            fileNameDisplay.style.fontWeight = 'bold';
         }
-    });
+    }
+});
 });
 </script>
 @endsection

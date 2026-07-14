@@ -11,7 +11,7 @@
         body { font-family: 'Inter', sans-serif !important; background-color: #f3f4f6; }
         /* Memaksa elemen agar mengikuti desain */
         * { box-sizing: border-box; }
-       [x-cloak] { display: none !important; }  
+       [x-cloak] { display: none !important; }
     </style>
 </head>
 <body class="flex justify-center min-h-screen">

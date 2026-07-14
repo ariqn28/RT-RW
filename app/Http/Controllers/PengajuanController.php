@@ -21,22 +21,21 @@ class PengajuanController extends Controller
         $user = auth()->user();
 
     // --- TAMBAHAN UNTUK WARGA (MULAI) ---
-    if ($user->role === 'warga') {
-        $counts = [
-            'pending' => Pengajuan::where('user_id', $user->id)->where('status', 'baru')->count(),
-            'approved' => Pengajuan::where('user_id', $user->id)->where('status', 'diterima')->count(),
-            'rejected' => Pengajuan::where('user_id', $user->id)->where('status', 'ditolak')->count(),
-            'total' => Pengajuan::where('user_id', $user->id)->count(),
-        ];
+   if ($user->role === 'warga') {
+    // Kita buat array counts agar bisa dipanggil di view
+    $counts = [
+        'TUNGGU'  => Pengajuan::where('user_id', $user->id)->where('status', 'baru')->count(),
+        'SETUJU'  => Pengajuan::where('user_id', $user->id)->where('status', 'diterima')->count(),
+        'TOLAK'   => Pengajuan::where('user_id', $user->id)->where('status', 'ditolak')->count(),
+    ];
 
-        // Mengarahkan ke view khusus warga yang sudah kita buat
-        return view('warga.dashboard_warga', compact('counts'));
-    }
+    return view('warga.dashboard_warga', compact('counts'));
+}
     // --- TAMBAHAN UNTUK WARGA (SELESAI) ---
 
     // --- LOGIKA LAMA (JANGAN DIHAPUS) ---
     $isWarga = $user->role === 'warga';
-    
+
         $user = auth()->user();
         $isWarga = $user->role === 'warga';
 
@@ -140,15 +139,15 @@ class PengajuanController extends Controller
         ]);
 
         try {
-            $validated = $request->validate([
-                'jenis_surat' => 'required|string|max:255',
-                'nama'        => 'required|string|max:255',
-                'nik'         => 'required|string|max:20',
-                'alamat'      => 'required|string|max:255',
-                'alasan'      => 'required|string|min:10',
-                'file'        => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:1024',
-            ]);
-
+           $validated = $request->validate([
+    'jenis_surat' => 'required|string|max:255',
+    'nama'        => 'required|string|max:255',
+    'nik'         => 'required|string|max:20',
+    'alamat'      => 'required|string|max:255',
+    'alasan'      => 'required|string|min:10',
+    // Ubah max:1024 menjadi max:2048
+    'file'        => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+]);
             Log::info('Validation passed');
 
             $validated['status'] = 'baru';
@@ -203,8 +202,15 @@ class PengajuanController extends Controller
                 ]);
             }
 
-            return redirect()->route('status.show', $pengajuan->id)
-                             ->with('success', 'Pengajuan berhasil dikirim!');
+            // ... kode sebelumnya ...
+
+Log::info('=== STORE PENGAJUAN SUCCESS ===');
+
+// Ubah bagian ini agar diarahkan ke 'warga.landing'
+return redirect()->route('warga.dashboard')
+                 ->with('success', 'Pengajuan berhasil dikirim!');
+
+// ... kode catch ...
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Validation failed', ['errors' => $e->errors()]);

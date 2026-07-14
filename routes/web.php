@@ -82,3 +82,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/informasi', [InformasiController::class, 'index'])->name('informasi.index');
 });
 
+// Tambahkan atau pastikan rute ini ada
+Route::get('/warga/dashboard', function () {
+    return view('warga.dashboard_warga');
+})->name('warga.dashboard');
