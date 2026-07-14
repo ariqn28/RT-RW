@@ -66,33 +66,45 @@
     </div>
 
     <div>
-        <h3 class="font-bold text-gray-800 mb-3">Status Pengajuan</h3>
-        <div class="grid grid-cols-3 gap-2">
-           @php
-    $statuses = [
-        'TUNGGU'  => ['color' => 'amber', 'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
-        'SETUJU'  => ['color' => 'emerald', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
-        'TOLAK'   => ['color' => 'red', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'],
-    ];
-@endphp
+    <h3 class="font-bold text-gray-800 mb-3">Status Pengajuan</h3>
+    <div class="grid grid-cols-3 gap-2">
+        @php
+            $statuses = [
+                'TUNGGU' => ['color' => 'amber', 'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
+                'SETUJU' => ['color' => 'emerald', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+                'TOLAK'  => ['color' => 'red', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ];
+        @endphp
 
-@foreach($statuses as $label => $data)
-<div class="bg-white p-3 rounded-2xl border border-gray-100 text-center shadow-sm">
-    <svg class="w-6 h-6 mx-auto mb-1 text-{{ $data['color'] }}-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $data['icon'] }}" />
-    </svg>
+        @foreach($statuses as $label => $data)
+        <div class="bg-white p-3 rounded-2xl border border-gray-100 text-center shadow-sm">
+            <svg class="w-6 h-6 mx-auto mb-1 text-{{ $data['color'] }}-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $data['icon'] }}" />
+            </svg>
 
-    <!-- Bagian ini yang diubah agar menampilkan angka dinamis -->
-    <div class="text-lg font-bold text-gray-800">
-        {{ $counts[$label] ?? 0 }}
-    </div>
+            <div id="count-{{ $label }}" class="text-lg font-bold text-gray-800">
+                {{ $counts[$label] ?? 0 }}
+            </div>
 
-    <div class="text-[9px] font-bold text-{{ $data['color'] }}-600">{{ $label }}</div>
-</div>
-@endforeach
+            <div class="text-[9px] font-bold text-{{ $data['color'] }}-600">{{ $label }}</div>
         </div>
+        @endforeach
     </div>
+</div>
 
+<script>
+    setInterval(function() {
+        fetch("{{ route('warga.stats') }}")
+            .then(response => response.json())
+            .then(data => {
+                // Update hanya jika angkanya berubah
+                if(document.getElementById('count-TUNGGU')) document.getElementById('count-TUNGGU').innerText = data.TUNGGU;
+                if(document.getElementById('count-SETUJU')) document.getElementById('count-SETUJU').innerText = data.SETUJU;
+                if(document.getElementById('count-TOLAK')) document.getElementById('count-TOLAK').innerText = data.TOLAK;
+            })
+            .catch(err => console.error('Error:', err));
+    }, 3000); // Cek data baru setiap 3 detik secara otomatis
+</script>
     <div>
     <h3 class="font-bold text-gray-800 mb-3">LAYANAN UTAMA RT/RW</h3>
     <div class="grid grid-cols-2 gap-3">

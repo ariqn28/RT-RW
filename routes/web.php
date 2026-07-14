@@ -86,3 +86,5 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/warga/dashboard', function () {
     return view('warga.dashboard_warga');
 })->name('warga.dashboard');
+
+Route::get('/warga/stats', [App\Http\Controllers\PengajuanController::class, 'getStats'])->name('warga.stats');
