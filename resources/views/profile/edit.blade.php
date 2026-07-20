@@ -1,131 +1,52 @@
-@extends('layouts.app')
-
-@section('title', 'Pengaturan Akun')
+@extends('layouts.warga_app')
 
 @section('content')
-<div class="card card-panel shadow-sm p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h4 mb-1">Pengaturan Akun</h2>
-            <p class="text-muted mb-0">Kelola informasi profil dan keamanan akun.</p>
-        </div>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Kembali
-        </a>
+<div class="container pb-20 px-4 mt-4">
+    <div class="mb-6">
+        <h2 class="h3 font-bold text-gray-800">Pengaturan Profil</h2>
+        <p class="text-gray-500 text-sm">Update informasi data diri Anda.</p>
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success rounded-3 mb-4">{{ session('success') }}</div>
+        <div class="bg-green-100 text-green-700 p-4 rounded-xl mb-4 text-sm font-medium border border-green-200">
+            {{ session('success') }}
+        </div>
     @endif
 
-    <form method="POST" action="{{ route('profile.update') }}">
+    <form method="POST" action="{{ route('profile.update') }}" class="space-y-4">
         @csrf
         @method('PUT')
 
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Nama Lengkap</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name', auth()->user()->name) }}" required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+        <!-- Data Diri -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+            <h3 class="text-sm font-bold text-gray-800 border-b pb-2">Data Diri</h3>
+
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Nama Lengkap</label>
+                <input type="text" name="name" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50" value="{{ old('name', auth()->user()->name) }}" required>
             </div>
-            <div class="col-md-6">
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Email</label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email', auth()->user()->email) }}" required>
-                    @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Email</label>
+                <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50" value="{{ old('email', auth()->user()->email) }}" required>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">NIK</label>
+                <input type="text" name="nik" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50" value="{{ old('nik', auth()->user()->nik ?? '') }}">
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Alamat</label>
+                <textarea name="alamat" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50" rows="2">{{ old('alamat', auth()->user()->alamat ?? '') }}</textarea>
             </div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">NIK</label>
-                    <input type="text" class="form-control @error('nik') is-invalid @enderror" name="nik" value="{{ old('nik', auth()->user()->nik ?? '') }}" maxlength="16">
-                    @error('nik')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Alamat</label>
-                    <textarea class="form-control @error('alamat') is-invalid @enderror" name="alamat" rows="3">{{ old('alamat', auth()->user()->alamat ?? '') }}</textarea>
-                    @error('alamat')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <h5 class="fw-semibold mb-3">Konfigurasi Wi‑Fi</h5>
-            <p class="text-muted small mb-3">Ubah SSID dan password Wi‑Fi dari aplikasi ini tanpa harus membuka halaman router.</p>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">SSID Wi‑Fi</label>
-                    <input type="text" class="form-control @error('wifi_ssid') is-invalid @enderror" name="wifi_ssid" value="{{ old('wifi_ssid', env('WIFI_SSID', '')) }}">
-                    @error('wifi_ssid')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Password Wi‑Fi</label>
-                    <input type="password" class="form-control @error('wifi_password') is-invalid @enderror" name="wifi_password" value="{{ old('wifi_password') }}" autocomplete="new-password">
-                    @error('wifi_password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Kosongkan jika tidak ingin mengubah password saat ini.</div>
-                </div>
-            </div>
-        </div>
-
-        @if(auth()->user()->role === 'warga')
-        <div class="mb-4">
-            <h5 class="fw-semibold mb-3">Ganti Password</h5>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Password Lama</label>
-                    <input type="password" class="form-control @error('current_password') is-invalid @enderror" name="current_password">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Password Baru</label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" autocomplete="new-password">
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Konfirmasi Password</label>
-                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" name="password_confirmation">
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <div class="d-flex gap-3">
-            <button type="submit" class="btn btn-success px-4">
-                <i class="bi bi-check-circle me-2"></i>Simpan Perubahan
-            </button>
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-4">Batal</a>
+        <!-- Aksi -->
+        <div class="flex gap-3 pt-2">
+            <button type="submit" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">Simpan Perubahan</button>
+            <a href="{{ route('dashboard') }}" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-center">Batal</a>
         </div>
     </form>
 </div>
-
-<script>
-    // Auto-hide success alert
-    setTimeout(function() {
-        document.querySelector('.alert')?.classList.add('fade', 'show');
-        document.querySelector('.alert')?.addEventListener('transitionend', function() {
-            this.remove();
-        });
-    }, 5000);
-</script>
 @endsection
-

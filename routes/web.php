@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\IuranController;
+use App\Http\Controllers\InformasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +46,7 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
     Route::get('/pengaturan', 'App\\Http\\Controllers\\ProfileController@edit')->name('profile.edit');
     Route::put('/pengaturan', 'App\\Http\\Controllers\\ProfileController@update')->name('profile.update');
 
+<<<<<<< HEAD
     // Admin routes (jaga kompatibilitas route: admin.users.*)
     Route::middleware('role:admin,rt,rw')
         ->prefix('admin')
@@ -51,6 +54,12 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
         ->group(function () {
             Route::resource('users', 'App\\Http\\Controllers\\UserController');
         });
+=======
+    // Admin routes
+    Route::middleware('role:admin,rt,rw')->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('users', 'App\\Http\\Controllers\\UserController');
+    });
+>>>>>>> b4a8a90c6a85d98c0dcb599462d2c3f18547fb1a
 
     // RT/RW dashboards
     Route::get('/admin/rt', [PengajuanController::class, 'index'])->name('dashboard.rt');
@@ -81,3 +90,20 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
     // Hapus pengajuan
     Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->name('status.destroy');
 });
+
+
+// Pastikan route ini ada di dalam group 'auth'
+Route::middleware(['auth'])->group(function () {
+    Route::get('/iuran', [IuranController::class, 'index'])->name('iuran.index');
+});
+   Route::middleware(['auth'])->group(function () {
+    // ... rute lainnya
+    Route::get('/informasi', [InformasiController::class, 'index'])->name('informasi.index');
+});
+
+// Tambahkan atau pastikan rute ini ada
+Route::get('/warga/dashboard', function () {
+    return view('warga.dashboard_warga');
+})->name('warga.dashboard');
+
+Route::get('/warga/stats', [App\Http\Controllers\PengajuanController::class, 'getStats'])->name('warga.stats');
