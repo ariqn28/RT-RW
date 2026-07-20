@@ -11,8 +11,21 @@ use App\Http\Controllers\PengajuanController;
 */
 
 Route::get('/', function () {
-    return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    $role = auth()->user()->role;
+
+    // Arahkan sesuai role agar tidak loop redirect
+    if (in_array($role, ['rt', 'rw'], true)) {
+        return redirect()->route('dashboard');
+    }
+
+    // untuk warga atau role lain, arahkan ke landing warga
+    return redirect()->route('warga.landing');
 });
+
 
 // Public warga landing page
 Route::get('/warga', function () {
@@ -26,34 +39,33 @@ Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'store'])->name('register.store');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Pengajuan (wajib login)
-Route::middleware('auth')->group(function () {
-        Route::get('/pengaturan', 'App\\Http\\Controllers\\ProfileController@edit')->name('profile.edit');
-        Route::put('/pengaturan', 'App\\Http\\Controllers\\ProfileController@update')->name('profile.update');
+// Pengajuan (RT/RW saja)
+Route::middleware(['auth', 'role:rt,rw'])->group(function () {
+    Route::get('/pengaturan', 'App\\Http\\Controllers\\ProfileController@edit')->name('profile.edit');
+    Route::put('/pengaturan', 'App\\Http\\Controllers\\ProfileController@update')->name('profile.update');
 
-    // Admin routes
-    Route::middleware('role:admin,rt,rw')->prefix('admin')->name('admin.')->group(function () {
-        Route::resource('users', 'App\\Http\\Controllers\\UserController');
-    }); 
+    // Admin routes (jaga kompatibilitas route: admin.users.*)
+    Route::middleware('role:admin,rt,rw')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::resource('users', 'App\\Http\\Controllers\\UserController');
+        });
 
-    // RT/RW dashboards (allow rt,rw access)
-    Route::middleware('role:rt,rw')->group(function () {
-        Route::get('/admin/rt', [PengajuanController::class, 'index'])->name('dashboard.rt');
-        Route::get('/admin/rw', [PengajuanController::class, 'index'])->name('dashboard.rw');
-    });
+    // RT/RW dashboards
+    Route::get('/admin/rt', [PengajuanController::class, 'index'])->name('dashboard.rt');
+    Route::get('/admin/rw', [PengajuanController::class, 'index'])->name('dashboard.rw');
 
-    // Dashboard utama (semua roles)
+
+    // Dashboard RT/RW
     Route::get('/dashboard', [PengajuanController::class, 'index'])->name('dashboard');
-    // RT/RW special dashboard
-    Route::middleware('role:rt,rw')->get('/rt-rw-dashboard', [PengajuanController::class, 'index'])->name('dashboard.rt-rw');
+    Route::get('/rt-rw-dashboard', [PengajuanController::class, 'index'])->name('dashboard.rt-rw');
 
     // Approve/reject routes
-    Route::middleware('role:rt,rw')->group(function () {
-        Route::post('/status/{pengajuan}/approve', [PengajuanController::class, 'approve'])->name('status.approve');
-        Route::post('/status/{pengajuan}/reject', [PengajuanController::class, 'reject'])->name('status.reject');
-    });
+    Route::post('/status/{pengajuan}/approve', [PengajuanController::class, 'approve'])->name('status.approve');
+    Route::post('/status/{pengajuan}/reject', [PengajuanController::class, 'reject'])->name('status.reject');
 
-    // Ajukan surat
+    // Ajukan surat (kalau memang RT/RW yang mengajukan di web)
     Route::get('/ajukan', [PengajuanController::class, 'create'])->name('ajukan');
     Route::post('/ajukan', [PengajuanController::class, 'store'])->name('pengajuan.store');
 
@@ -61,10 +73,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/status/{pengajuan}', [PengajuanController::class, 'show'])->name('status.show');
     // Riwayat
     Route::get('/riwayat', [PengajuanController::class, 'history'])->name('riwayat');
-    Route::middleware('role:rt,rw')->group(function () {
-        Route::get('/status/{pengajuan}/edit', [PengajuanController::class, 'edit'])->name('status.edit');
-        Route::put('/status/{pengajuan}', [PengajuanController::class, 'update'])->name('status.update');
-    });
+
+    // Edit/update status
+    Route::get('/status/{pengajuan}/edit', [PengajuanController::class, 'edit'])->name('status.edit');
+    Route::put('/status/{pengajuan}', [PengajuanController::class, 'update'])->name('status.update');
 
     // Hapus pengajuan
     Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->name('status.destroy');

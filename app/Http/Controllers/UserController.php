@@ -38,7 +38,9 @@ class UserController extends Controller
             'role' => 'required|in:warga,rt,rw,admin',
         ]);
 
-        $validated['password'] = bcrypt($validated['password']);
+        // Gunakan fasad Hash untuk konsistensi
+        // $validated['password'] = bcrypt($validated['password']);
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
 
         User::create($validated);
 

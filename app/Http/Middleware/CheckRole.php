@@ -21,8 +21,10 @@ class CheckRole
         }
 
         if (!in_array(auth()->user()->role, $roles)) {
-            // Redirect ke dashboard dengan pesan error, bukan abort 403
-            return redirect()->route('dashboard')->with('error', 'Akses ditolak. Halaman ini hanya untuk pengguna dengan role: ' . implode(', ', $roles) . '. Role Anda: ' . auth()->user()->role);
+            $userRole = auth()->user()->role;
+            $homeRoute = $userRole === 'warga' ? 'warga.landing' : 'dashboard';
+
+            return redirect()->route($homeRoute)->with('error', 'Akses ditolak. Halaman ini hanya untuk pengguna dengan role: ' . implode(', ', $roles) . '. Role Anda: ' . $userRole);
         }
 
         return $next($request);

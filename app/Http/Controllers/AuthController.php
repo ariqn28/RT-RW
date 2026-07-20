@@ -28,20 +28,20 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $role = $request->input('role', 'warga');
-        $validatedRole = in_array($role, ['warga', 'rt', 'rw'], true) ? $role : 'warga';
-
+        // Untuk registrasi publik, peran harus selalu 'warga' untuk keamanan.
+        // Pembuatan user RT/RW/Admin sebaiknya hanya melalui panel admin.
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validatedRole,
+            'role' => 'warga',
         ]);
 
 
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        // Setelah registrasi, semua user baru (warga) diarahkan ke landing page warga.
+        return redirect()->route('warga.landing');
     }
 
     public function authenticate(Request $request)
@@ -51,70 +51,22 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $selectedRole = $request->input('role');
-
-        if (Auth::attempt(array_merge($credentials, ['role' => $selectedRole]))) {
+        // Coba otentikasi tanpa memeriksa peran terlebih dahulu
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
+
+            $user = Auth::user();
+            if ($user->role === 'warga') {
+                return redirect()->route('warga.landing');
+            }
+            // Untuk peran lain (rt, rw, admin), arahkan ke dashboard utama
+            return redirect()->route('dashboard');
         }
 
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',
         ])->onlyInput('email');
-    }
-
-    public function mobileLogin(Request $request)
-    {
-        if ($request->getMethod() === 'GET' || $request->isMethod('GET')) {
-            return response()->json([
-                'message' => 'Gunakan method POST untuk login mobile.',
-                'example' => [
-                    'email' => 'warga@gmail.com',
-                    'password' => '12345678',
-                    'device_name' => 'Android App',
-                ],
-                'hint' => 'Kirim request POST ke endpoint ini dari aplikasi mobile.',
-            ], 405);
-        }
-
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-            'device_name' => 'nullable|string|max:255',
-        ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
-            return response()->json([
-                'message' => 'Email atau password salah.',
-            ], 401);
-        }
-
-        // Izinkan login mobile untuk warga, rt, dan rw
-        if (!in_array($user->role, ['warga', 'rt', 'rw'], true)) {
-            return response()->json([
-                'message' => 'Akun ini tidak dapat digunakan untuk login mobile.',
-            ], 403);
-        }
-
-
-        $token = $user->createToken($validated['device_name'] ?? 'mobile-app')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login berhasil',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'nik' => $user->nik,
-                'alamat' => $user->alamat,
-            ],
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 200);
     }
 
     public function logout(Request $request)
