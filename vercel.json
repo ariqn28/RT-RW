@@ -1,7 +1,9 @@
 {
     "version": 2,
     "functions": {
-        "api/index.php": { "runtime": "vercel-php@0.6.2" }
+        "api/index.php": {
+            "runtime": "vercel-php@0.6.2"
+        }
     },
     "routes": [
         {
@@ -23,7 +25,16 @@
         "QUEUE_CONNECTION": "sync"
     },
     "builds": [
-        { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "public/build" } },
-        { "src": "api/index.php", "use": "vercel-php@0.6.2" }
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "public/build"
+            }
+        },
+        {
+            "src": "api/index.php",
+            "use": "vercel-php@0.6.2"
+        }
     ]
 }

@@ -48,23 +48,32 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
-            'role' => 'required|in:warga,rt,rw',
+            'role' => 'required|in:warga,rt,rw,admin',
         ]);
 
-        // Coba otentikasi tanpa memeriksa peran terlebih dahulu
+        // ✅ FIX: Coba otentikasi dengan email + password
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();
 
             $user = Auth::user();
 
-            // Arahkan ke dashboard sesuai role yang dipilih di form login
-            return match ($credentials['role']) {
+            // ✅ FIX: Validasi bahwa role form === role database
+            if ($user->role !== $credentials['role']) {
+                Auth::logout();
+                $request->session()->invalidate();
+                return back()->withErrors([
+                    'role' => 'Role tidak sesuai. User Anda adalah: ' . strtoupper($user->role),
+                ])->onlyInput('email');
+            }
+
+            // Arahkan ke dashboard sesuai role aktual dari database
+            return match ($user->role) {
                 'rt'    => redirect()->route('dashboard.rt'),
                 'rw'    => redirect()->route('dashboard.rw'),
+                'admin' => redirect()->route('admin.dashboard'),
                 default => redirect()->route('warga.dashboard'),
             };
         }
-
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',
