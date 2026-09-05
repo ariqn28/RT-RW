@@ -14,7 +14,6 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "false",
-        "APP_URL": "https://your-app-name.vercel.app",
         "APP_CONFIG_CACHE": "bootstrap/cache/config.php",
         "APP_ROUTES_CACHE": "bootstrap/cache/routes-v7.php",
         "APP_EVENTS_CACHE": "bootstrap/cache/events.php",

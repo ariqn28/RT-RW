@@ -46,7 +46,6 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
     Route::get('/pengaturan', 'App\\Http\\Controllers\\ProfileController@edit')->name('profile.edit');
     Route::put('/pengaturan', 'App\\Http\\Controllers\\ProfileController@update')->name('profile.update');
 
-<<<<<<< HEAD
     // Admin routes (jaga kompatibilitas route: admin.users.*)
     Route::middleware('role:admin,rt,rw')
         ->prefix('admin')
@@ -54,12 +53,6 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
         ->group(function () {
             Route::resource('users', 'App\\Http\\Controllers\\UserController');
         });
-=======
-    // Admin routes
-    Route::middleware('role:admin,rt,rw')->prefix('admin')->name('admin.')->group(function () {
-        Route::resource('users', 'App\\Http\\Controllers\\UserController');
-    });
->>>>>>> b4a8a90c6a85d98c0dcb599462d2c3f18547fb1a
 
     // RT/RW dashboards
     Route::get('/admin/rt', [PengajuanController::class, 'index'])->name('dashboard.rt');
