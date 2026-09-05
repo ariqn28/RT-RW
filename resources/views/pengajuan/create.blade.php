@@ -51,7 +51,7 @@
 
             <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alasan Pengajuan</label>
-                <textarea id="alasanTextarea" name="alasan" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" required>{{ old('alasan') }}</textarea>
+                <textarea name="alasan" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" required>{{ old('alasan') }}</textarea>
             </div>
 
             <div>
@@ -85,10 +85,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const jenisSuratSelect = document.querySelector('select[name="jenis_surat"]');
     const alasanTextarea = document.getElementById('alasanTextarea');
-
-    if (!alasanTextarea) {
-        return;
-    }
 
     const contohAlasan = {
         'Surat Keterangan Domisili': 'Saya mengajukan surat keterangan domisili untuk keperluan pembuatan KTP karena alamat saya belum tercatat dengan benar di sistem kependudukan.',

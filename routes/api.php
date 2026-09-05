@@ -25,9 +25,7 @@ use App\Http\Controllers\Api\MobileRiwayatController;
 
 
 
-Route::post('/mobile/register', [MobileAuthController::class, 'mobileRegister']);
-Route::post('/mobile/login', [MobileAuthController::class, 'mobileLogin']);
-Route::get('/mobile/login', [MobileAuthController::class, 'mobileLogin']);
+Route::match(['GET', 'POST'], '/mobile/login', [MobileAuthController::class, 'mobileLogin']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [MobileProfileController::class, 'index']);

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Pengajuan - Simple (No JS, No File)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Ajukan Surat (SIMPLE NO JS)</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Form ini <b>tanpa JavaScript</b> dan <b>tanpa upload file</b>. Jika berhasil, masalahnya di JavaScript atau file upload.</p>
+
+                    <form action="http://127.0.0.1:8000/ajukan" method="POST">
+                        <input type="hidden" name="_token" value="" id="csrf">
+
+                        <div class="mb-3">
+                            <label class="form-label">Jenis Surat *</label>
+                            <select name="jenis_surat" class="form-select" required>
+                                <option value="">Pilih</option>
+                                <option value="Surat Pengantar" selected>Surat Pengantar</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nama *</label>
+                            <input type="text" name="nama" class="form-control" value="Test Nama" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">NIK *</label>
+                            <input type="text" name="nik" class="form-control" value="1234567890123456" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Alamat *</label>
+                            <input type="text" name="alamat" class="form-control" value="Jl. Test No. 1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Alasan *</label>
+                            <textarea name="alasan" class="form-control" rows="3" required>Test alasan pengajuan surat.</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Kirim (No JS)</button>
+                            <a href="http://127.0.0.1:8000/dashboard" class="btn btn-outline-secondary">Kembali</a>
+                        </div>
+                    </form>
+
+                    <hr>
+                    <div class="alert alert-info">
+                        <b>Cara pakai:</b>
+                        <ol>
+                            <li>Login dulu ke <a href="http://127.0.0.1:8000/login" target="_blank">http://127.0.0.1:8000/login</a></li>
+                            <li>Buka halaman ini di tab SAMA (bukan tab baru)</li>
+                            <li>Klik tombol <b>Kirim (No JS)</b></li>
+                        </ol>
+                    </div>
+            </div>
+    </div>
+<script>
+// Auto-ambil CSRF token dari page lain (buka di tab yang sama setelah login)
+fetch('http://127.0.0.1:8000/ajukan').then(r => r.text()).then(t => {
+    const match = t.match(/name="_token" value="([^"]+)"/);
+    if (match) document.getElementById('csrf').value = match[1];
+});
+</script>
+</body>
+</html>

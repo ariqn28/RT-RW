@@ -8,46 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class MobileAuthController extends Controller
 {
-    public function mobileRegister(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'sometimes|in:warga,rt,rw',
-            'nik' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string|max:255',
-            'device_name' => 'nullable|string|max:255',
-        ]);
-
-        $user = \App\Models\User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'role' => $validated['role'] ?? 'warga',
-            'nik' => $validated['nik'] ?? null,
-            'alamat' => $validated['alamat'] ?? null,
-        ]);
-
-        $token = $user->createToken($validated['device_name'] ?? 'mobile-app')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Registrasi akun mobile berhasil.',
-            'business_flow' => 'Akun berhasil dibuat dan otomatis login ke aplikasi mobile.',
-            'token' => $token,
-            'token_type' => 'Bearer',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'nik' => $user->nik,
-                'alamat' => $user->alamat,
-            ],
-        ], 201);
-    }
-
     public function mobileLogin(Request $request)
     {
         if ($request->isMethod('GET')) {

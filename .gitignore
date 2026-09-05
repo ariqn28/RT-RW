@@ -16,5 +16,3 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/RT-RW
-/storage/framework/sessions/*

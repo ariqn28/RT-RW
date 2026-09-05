@@ -162,10 +162,15 @@ public function getStats()
                 ]);
             }
 
-            Log::info('=== STORE PENGAJUAN SUCCESS ===');
+            // ... kode sebelumnya ...
 
-            return redirect()->route('status.show', $pengajuan->id)
-                ->with('success', 'Pengajuan berhasil dikirim!');
+Log::info('=== STORE PENGAJUAN SUCCESS ===');
+
+// Ubah bagian ini agar diarahkan ke 'warga.landing'
+return redirect()->route('warga.dashboard')
+                 ->with('success', 'Pengajuan berhasil dikirim!');
+
+// ... kode catch ...
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Validation failed', ['errors' => $e->errors()]);
@@ -202,12 +207,7 @@ public function getStats()
         $pengajuan->load('statusHistories.changedBy');
         $isAdmin = $user->role === 'admin';
 
-        // Use mobile view for warga, web view for rt/rw/admin
-        if ($user->role === 'warga') {
-            return view('pengajuan.show', compact('pengajuan', 'isAdmin'));
-        } else {
-            return view('pengajuan.show-web', compact('pengajuan', 'isAdmin'));
-        }
+        return view('pengajuan.show', compact('pengajuan', 'isAdmin'));
     }
 
     public function history()
@@ -224,61 +224,16 @@ public function getStats()
 
         $histories->load(['pengajuan.user', 'changedBy']);
 
-        // Warga: tampilan mobile; RT/RW/Admin: tampilan web (Bootstrap)
-        if ($user->role === 'warga') {
-            return view('pengajuan.history', compact('histories'));
-        }
-
-        return view('pengajuan.history-web', compact('histories'));
+        return view('pengajuan.history', compact('histories'));
     }
 
     public function edit(Pengajuan $pengajuan)
     {
-        $user = auth()->user();
-
-        // Warga hanya boleh edit pengajuan miliknya sendiri dan saat masih 'baru'
-        if ($user->role === 'warga') {
-            if ($pengajuan->user_id !== $user->id) {
-                abort(403, 'Anda tidak memiliki akses ke pengajuan ini.');
-            }
-            if ($pengajuan->status !== 'baru') {
-                return redirect()->route('status.show', $pengajuan->id)
-                    ->with('error', 'Pengajuan sudah diproses dan tidak dapat diubah.');
-            }
-        }
-
         return view('pengajuan.edit', compact('pengajuan'));
     }
 
     public function update(Request $request, Pengajuan $pengajuan)
     {
-        $user = auth()->user();
-
-        // Warga: hanya boleh mengubah data miliknya sendiri, bukan status
-        if ($user->role === 'warga') {
-            if ($pengajuan->user_id !== $user->id) {
-                abort(403, 'Anda tidak memiliki akses ke pengajuan ini.');
-            }
-            if ($pengajuan->status !== 'baru') {
-                return redirect()->route('status.show', $pengajuan->id)
-                    ->with('error', 'Pengajuan sudah diproses dan tidak dapat diubah.');
-            }
-
-            $validated = $request->validate([
-                'jenis_surat' => 'required|string|max:255',
-                'nama'        => 'required|string|max:255',
-                'nik'         => 'required|string|max:20',
-                'alamat'      => 'required|string|max:255',
-                'alasan'      => 'required|string|min:10',
-            ]);
-
-            $pengajuan->update($validated);
-
-            return redirect()->route('status.show', $pengajuan->id)
-                             ->with('success', 'Pengajuan berhasil diperbarui!');
-        }
-
-        // RT/RW/Admin: perubahan status
         $validated = $request->validate([
             'status' => 'required|in:baru,disetujui_rt,diterima,ditolak',
         ]);
@@ -376,24 +331,6 @@ public function getStats()
 
     public function destroy(Pengajuan $pengajuan)
     {
-        $user = auth()->user();
-
-        // Warga hanya boleh hapus pengajuan miliknya sendiri dan saat masih 'baru'
-        if ($user->role === 'warga') {
-            if ($pengajuan->user_id !== $user->id) {
-                abort(403, 'Anda tidak memiliki akses ke pengajuan ini.');
-            }
-            if ($pengajuan->status !== 'baru') {
-                return redirect()->route('status.show', $pengajuan->id)
-                    ->with('error', 'Pengajuan sudah diproses dan tidak dapat dihapus.');
-            }
-        }
-
-        // Hapus file lampiran jika ada
-        if ($pengajuan->file_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajuan->file_path);
-        }
-
         $pengajuan->delete();
         return redirect()->route('dashboard')
                          ->with('success', 'Pengajuan berhasil dihapus!');

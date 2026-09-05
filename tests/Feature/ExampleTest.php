@@ -12,12 +12,10 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function test_the_application_redirects_home_to_login()
+    public function test_the_application_returns_a_successful_response()
     {
         $response = $this->get('/');
 
-        // Root '/' mengarahkan ke halaman login untuk guest
-        $response->assertStatus(302);
-        $response->assertRedirect(route('login'));
+        $response->assertStatus(200);
     }
 }

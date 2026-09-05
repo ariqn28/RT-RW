@@ -25,20 +25,7 @@ class ProfileController extends Controller
             'alamat' => 'nullable|string|max:500',
             'current_password' => ['nullable', 'current_password'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
-            'wifi_ssid' => 'nullable|string|max:255',
-            'wifi_password' => 'nullable|string|max:255',
         ]);
-
-        // Simpan pengaturan Wi-Fi ke file .env (dipakai konfigurasi PWA/mobile)
-        if ($request->filled('wifi_ssid') || $request->filled('wifi_password')) {
-            $envPath = base_path('.env');
-            $env = file_exists($envPath) ? file_get_contents($envPath) : '';
-
-            $env = $this->setEnvValue($env, 'WIFI_SSID', $request->input('wifi_ssid'));
-            $env = $this->setEnvValue($env, 'WIFI_PASSWORD', $request->input('wifi_password'));
-
-            file_put_contents($envPath, $env);
-        }
 
         // Update profile
         $user->fill([
@@ -55,26 +42,10 @@ class ProfileController extends Controller
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
-
+ 
         $user->save();
 
         return redirect()->route('profile.edit')
                          ->with('success', 'Profil berhasil diupdate.');
-    }
-
-    /**
-     * Set atau replace sebuah key di konten file .env.
-     */
-    private function setEnvValue(string $env, string $key, ?string $value): string
-    {
-        $line = $key . '=' . $value;
-
-        // Key sudah ada -> replace
-        if (preg_match('/^' . preg_quote($key, '/') . '=.*$/m', $env)) {
-            return preg_replace('/^' . preg_quote($key, '/') . '=.*$/m', $line, $env);
-        }
-
-        // Key belum ada -> tambahkan di akhir file
-        return rtrim($env, "\r\n") . "\r\n" . $line . "\r\n";
     }
 }
