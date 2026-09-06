@@ -229,7 +229,17 @@ return redirect()->route('warga.dashboard')
 
         $histories->load(['pengajuan.user', 'changedBy']);
 
-        return view('pengajuan.history', compact('histories'));
+        if ($user->role === 'warga') {
+            return view('pengajuan.history', compact('histories'));
+        }
+
+        $dashboardRoute = match ($user->role) {
+            'rt' => 'dashboard.rt',
+            'rw' => 'dashboard.rw',
+            default => 'dashboard',
+        };
+
+        return view('pengajuan.history-web', compact('histories', 'dashboardRoute'));
     }
 
     public function edit(Pengajuan $pengajuan)

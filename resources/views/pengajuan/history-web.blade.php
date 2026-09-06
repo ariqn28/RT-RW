@@ -8,7 +8,7 @@
         <h1 class="h3 mb-1">Riwayat Status</h1>
         <p class="text-muted mb-0">Log seluruh perubahan status pengajuan surat.</p>
     </div>
-    <a href="{{ route('dashboard') }}" class="btn btn-success">
+    <a href="{{ route($dashboardRoute) }}" class="btn btn-success">
         <i class="bi bi-house me-1"></i>Dashboard
     </a>
 </div>
