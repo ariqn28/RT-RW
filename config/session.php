@@ -168,7 +168,8 @@ return [
     |
     */
 
-    'secure' => false,
+    // Follow the current request so local HTTP and HTTPS tunnel sessions both work.
+    'secure' => env('SESSION_SECURE_COOKIES', null),
 
     /*
     |--------------------------------------------------------------------------

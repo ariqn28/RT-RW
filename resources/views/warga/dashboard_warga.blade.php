@@ -43,6 +43,17 @@
         </form>
     </div>
 
+    <a href="{{ route('ajukan') }}" class="block bg-emerald-600 p-5 rounded-[2rem] text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 transition-colors">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <p class="text-emerald-100 text-sm font-medium">Layanan warga</p>
+                <h2 class="font-bold text-xl mt-1">Ajukan Surat</h2>
+                <p class="text-emerald-50 text-sm mt-1">Kirim permohonan surat secara online.</p>
+            </div>
+            <span class="text-3xl" aria-hidden="true">→</span>
+        </div>
+    </a>
+
     <div class="bg-emerald-600 p-6 rounded-[2rem] text-white shadow-xl shadow-emerald-200/50">
         <div class="flex items-center gap-4 mb-6">
             <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm">

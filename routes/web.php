@@ -19,17 +19,17 @@ Route::get('/', function () {
 
     $role = auth()->user()->role;
 
-    // Arahkan sesuai role agar tidak loop redirect
-    if (in_array($role, ['rt', 'rw'], true)) {
-        return redirect()->route('dashboard');
-    }
-
-    // untuk warga atau role lain, arahkan ke landing warga
-    return redirect()->route('warga.landing');
+    return match ($role) {
+        'warga' => redirect()->route('warga.dashboard'),
+        'rt' => redirect()->route('dashboard.rt'),
+        'rw' => redirect()->route('dashboard.rw'),
+        'admin' => redirect()->route('dashboard'),
+        default => redirect()->route('login'),
+    };
 });
 
 
-// Public warga landing page
+// Public warga PWA landing page.
 Route::get('/warga', function () {
     return view('warga.index');
 })->name('warga.landing');
@@ -42,7 +42,7 @@ Route::post('/register', [AuthController::class, 'store'])->name('register.store
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Pengajuan (RT/RW saja)
-Route::middleware(['auth', 'role:rt,rw'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/pengaturan', 'App\\Http\\Controllers\\ProfileController@edit')->name('profile.edit');
     Route::put('/pengaturan', 'App\\Http\\Controllers\\ProfileController@update')->name('profile.update');
 
@@ -55,8 +55,8 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
         });
 
     // RT/RW dashboards
-    Route::get('/admin/rt', [PengajuanController::class, 'index'])->name('dashboard.rt');
-    Route::get('/admin/rw', [PengajuanController::class, 'index'])->name('dashboard.rw');
+    Route::get('/admin/rt', [PengajuanController::class, 'index'])->middleware('role:rt')->name('dashboard.rt');
+    Route::get('/admin/rw', [PengajuanController::class, 'index'])->middleware('role:rw')->name('dashboard.rw');
 
 
     // Dashboard RT/RW
@@ -64,8 +64,8 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
     Route::get('/rt-rw-dashboard', [PengajuanController::class, 'index'])->name('dashboard.rt-rw');
 
     // Approve/reject routes
-    Route::post('/status/{pengajuan}/approve', [PengajuanController::class, 'approve'])->name('status.approve');
-    Route::post('/status/{pengajuan}/reject', [PengajuanController::class, 'reject'])->name('status.reject');
+    Route::post('/status/{pengajuan}/approve', [PengajuanController::class, 'approve'])->middleware('role:rt,rw')->name('status.approve');
+    Route::post('/status/{pengajuan}/reject', [PengajuanController::class, 'reject'])->middleware('role:rt,rw')->name('status.reject');
 
     // Ajukan surat (kalau memang RT/RW yang mengajukan di web)
     Route::get('/ajukan', [PengajuanController::class, 'create'])->name('ajukan');
@@ -77,11 +77,11 @@ Route::middleware(['auth', 'role:rt,rw'])->group(function () {
     Route::get('/riwayat', [PengajuanController::class, 'history'])->name('riwayat');
 
     // Edit/update status
-    Route::get('/status/{pengajuan}/edit', [PengajuanController::class, 'edit'])->name('status.edit');
-    Route::put('/status/{pengajuan}', [PengajuanController::class, 'update'])->name('status.update');
+    Route::get('/status/{pengajuan}/edit', [PengajuanController::class, 'edit'])->middleware('role:rt,rw')->name('status.edit');
+    Route::put('/status/{pengajuan}', [PengajuanController::class, 'update'])->middleware('role:rt,rw')->name('status.update');
 
     // Hapus pengajuan
-    Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->name('status.destroy');
+    Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->middleware('role:rt,rw')->name('status.destroy');
 });
 
 
@@ -95,8 +95,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Tambahkan atau pastikan rute ini ada
-Route::get('/warga/dashboard', function () {
-    return view('warga.dashboard_warga');
-})->name('warga.dashboard');
+Route::middleware(['auth'])
+    ->get('/warga/dashboard', [PengajuanController::class, 'index'])
+    ->name('warga.dashboard');
 
 Route::get('/warga/stats', [App\Http\Controllers\PengajuanController::class, 'getStats'])->name('warga.stats');

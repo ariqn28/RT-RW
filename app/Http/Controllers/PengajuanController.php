@@ -16,7 +16,7 @@ class PengajuanController extends Controller
         $this->middleware('auth');
     }
 
-  public function index()
+    public function index(Request $request)
 {
     $user = auth()->user();
 
@@ -24,7 +24,7 @@ class PengajuanController extends Controller
     if ($user->role === 'warga') {
         $counts = [
             'TUNGGU' => Pengajuan::where('user_id', $user->id)->where('status', 'baru')->count(),
-            'SETUJU' => Pengajuan::where('user_id', $user->id)->where('status', 'diterima')->count(),
+            'SETUJU' => Pengajuan::where('user_id', $user->id)->whereIn('status', ['disetujui_rt', 'diterima'])->count(),
             'TOLAK'  => Pengajuan::where('user_id', $user->id)->where('status', 'ditolak')->count(),
         ];
         return view('warga.dashboard_warga', compact('counts'));
@@ -44,7 +44,12 @@ class PengajuanController extends Controller
 
     // 3. Logika untuk RT
     if ($user->role === 'rt') {
-        $pengajuan = Pengajuan::latest()->paginate(10);
+        $status = $request->input('status');
+        $pengajuanQuery = Pengajuan::latest();
+        if (in_array($status, ['baru', 'disetujui_rt', 'diterima', 'ditolak'], true)) {
+            $pengajuanQuery->where('status', $status);
+        }
+        $pengajuan = $pengajuanQuery->paginate(10)->withQueryString();
         $pending = Pengajuan::where('status', 'baru')->with('user')->latest()->take(5)->get();
         $counts = [
             'pending' => Pengajuan::where('status', 'baru')->count(),
@@ -80,7 +85,7 @@ public function getStats()
 
     return response()->json([
         'TUNGGU' => Pengajuan::where('user_id', $user->id)->where('status', 'baru')->count(),
-        'SETUJU' => Pengajuan::where('user_id', $user->id)->where('status', 'diterima')->count(),
+        'SETUJU' => Pengajuan::where('user_id', $user->id)->whereIn('status', ['disetujui_rt', 'diterima'])->count(),
         'TOLAK'  => Pengajuan::where('user_id', $user->id)->where('status', 'ditolak')->count(),
     ]);
 }

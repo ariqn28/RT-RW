@@ -40,8 +40,8 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        // Setelah registrasi, semua user baru (warga) diarahkan ke landing page warga.
-        return redirect()->route('warga.landing');
+        // Warga langsung masuk ke dashboard warga setelah registrasi.
+        return redirect()->route('warga.dashboard');
     }
 
     public function authenticate(Request $request)
@@ -55,18 +55,24 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            $user = Auth::user();
-            if ($user->role === 'warga') {
-                return redirect()->route('warga.landing');
-            }
-            // Untuk peran lain (rt, rw, admin), arahkan ke dashboard utama
-            return redirect()->route('dashboard');
+            return redirect()->route($this->dashboardRoute(Auth::user()->role));
         }
 
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',
         ])->onlyInput('email');
+    }
+
+    private function dashboardRoute(string $role): string
+    {
+        return match ($role) {
+            'warga' => 'warga.dashboard',
+            'rt' => 'dashboard.rt',
+            'rw' => 'dashboard.rw',
+            'admin' => 'dashboard',
+            default => 'login',
+        };
     }
 
     public function logout(Request $request)

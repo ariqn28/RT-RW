@@ -63,6 +63,42 @@ php artisan serve
 
 Buka browser: `http://localhost:8000`
 
+## Hosting dari GitHub
+
+GitHub digunakan sebagai repository kode. GitHub Pages tidak dapat menjalankan
+Laravel karena tidak menyediakan PHP, session server, atau database. Untuk
+deploy dari repository ini, hubungkan repository GitHub ke Vercel, Render,
+Railway, atau hosting PHP.
+
+### Vercel
+
+Repository ini sudah memiliki `vercel.json` dan entry point `api/index.php`.
+Saat membuat project Vercel dari repository GitHub, isi environment variables
+berikut di dashboard Vercel:
+
+```env
+APP_KEY=base64:<hasil-php-artisan-key-generate>
+APP_URL=https://alamat-domain-anda
+DB_CONNECTION=mysql
+DB_HOST=<host-database-produksi>
+DB_PORT=3306
+DB_DATABASE=<nama-database>
+DB_USERNAME=<username-database>
+DB_PASSWORD=<password-database>
+SESSION_DRIVER=cookie
+SESSION_SECURE_COOKIES=true
+```
+
+Jalankan migrasi pada database produksi sebelum login:
+
+```bash
+php artisan migrate --force
+```
+
+Jangan memakai SQLite lokal untuk production Vercel karena filesystem
+serverless tidak persisten. Jangan commit file `.env`, password database,
+atau `APP_KEY` ke GitHub.
+
 ---
 
 ## Struktur Peran (Role)

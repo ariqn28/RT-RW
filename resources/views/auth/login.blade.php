@@ -64,15 +64,6 @@
                         <input type="password" name="password" class="form-control" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        <select name="role" class="form-control" required>
-                            <option value="warga" {{ old('role') == 'warga' ? 'selected' : '' }}>Warga</option>
-                            <option value="rt" {{ old('role') == 'rt' ? 'selected' : '' }}>RT</option>
-                            <option value="rw" {{ old('role') == 'rw' ? 'selected' : '' }}>RW</option>
-                        </select>
-                    </div>
-
                     <button type="submit" class="btn btn-success btn-submit w-100">Submit</button>
                 </form>
 
