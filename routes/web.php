@@ -5,6 +5,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\IuranController;
 use App\Http\Controllers\InformasiController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\HealthController;
+
+Route::get('/health', HealthController::class)->name('health');
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +57,15 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
             Route::resource('users', 'App\\Http\\Controllers\\UserController');
         });
+
+    Route::middleware('role:admin,rt,rw')->prefix('admin/konten')->name('admin.content.')->group(function () {
+        Route::get('/', [ContentController::class, 'index'])->name('index');
+        Route::post('/berita', [ContentController::class, 'storeAnnouncement'])->name('announcements.store');
+        Route::delete('/berita/{announcement}', [ContentController::class, 'destroyAnnouncement'])->name('announcements.destroy');
+        Route::post('/iuran', [ContentController::class, 'storeDue'])->name('dues.store');
+        Route::delete('/iuran/{due}', [ContentController::class, 'destroyDue'])->name('dues.destroy');
+        Route::put('/kontak', [ContentController::class, 'updateContact'])->name('contact.update');
+    });
 
     // RT/RW dashboards
     Route::get('/admin/rt', [PengajuanController::class, 'index'])->middleware('role:rt')->name('dashboard.rt');
