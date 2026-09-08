@@ -139,7 +139,7 @@
         <a href="{{ route('iuran.index') }}" class="text-xs font-bold text-emerald-600">Lihat semua</a>
     </div>
     @forelse($activeDues as $due)
-        <a href="{{ route('iuran.index') }}" class="flex items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-2">
+        <a href="{{ route('iuran.index') }}#iuran-{{ $due->id }}" class="flex items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-2">
             <div>
                 <h4 class="font-bold text-gray-800 text-sm">{{ $due->title }}</h4>
                 <p class="text-xs text-gray-500 mt-1">{{ $due->due_date ? 'Batas ' . $due->due_date->format('d M Y') : 'Informasi pembayaran tersedia' }}</p>
@@ -147,7 +147,10 @@
                     <p class="text-[10px] text-emerald-700 font-semibold mt-1">{{ collect($due->payment_methods)->map(fn ($method) => ['qris' => 'QRIS', 'cash' => 'Cash', 'transfer' => 'Transfer'][$method] ?? $method)->implode(' · ') }}</p>
                 @endif
             </div>
-            <strong class="text-sm text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
+            <span class="text-right">
+                <strong class="block text-sm text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
+                <span class="mt-2 inline-block rounded-lg bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white">Bayar</span>
+            </span>
         </a>
     @empty
         <p class="bg-emerald-50 text-emerald-800 rounded-2xl p-4 text-sm">Belum ada iuran aktif.</p>
