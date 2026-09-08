@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rt-rw-pwa-v1';
+const CACHE_NAME = 'rt-rw-pwa-v2';
 const urlsToCache = ['/', '/css/app.css', '/js/app.js'];
 
 self.addEventListener('install', event => {
@@ -13,5 +13,12 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+
+  // Authenticated pages must never be served from an old PWA response.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(fetch(event.request).catch(() => caches.match(event.request).then(cached => cached || caches.match('/'))));
 });

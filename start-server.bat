@@ -9,7 +9,10 @@ echo Jangan tutup jendela ini!
 echo.
 
 set PHPRC=C:\Users\ASUS\AppData\Local\Microsoft\WinGet\Packages\PHP.PHP.NTS.8.3_Microsoft.Winget.Source_8wekyb3d8bbwe\php.ini
-cd /d "C:\Users\ASUS\rt-rw"
+cd /d "%~dp0"
+
+echo Membersihkan cache konfigurasi Laravel...
+php artisan optimize:clear
 
 echo Membuka Microsoft Edge...
 start msedge "http://127.0.0.1:8000"

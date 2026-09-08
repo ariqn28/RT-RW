@@ -51,11 +51,14 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Coba otentikasi tanpa memeriksa peran terlebih dahulu
+        // Jangan biarkan session user sebelumnya ikut terbawa saat berganti akun.
+        Auth::logout();
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->route($this->dashboardRoute(Auth::user()->role));
+            $role = strtolower(trim((string) Auth::user()->role));
+            return redirect()->route($this->dashboardRoute($role));
         }
 
 

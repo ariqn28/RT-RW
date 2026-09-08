@@ -12,7 +12,7 @@
         <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary me-2">
             <i class="bi bi-people me-1"></i>Manajemen User
         </a>
-        <a href="{{ route('dashboard') }}" class="btn btn-success">
+        <a href="{{ route('dashboard.rw') }}" class="btn btn-success">
             <i class="bi bi-house me-1"></i>Dashboard
         </a>
     </div>

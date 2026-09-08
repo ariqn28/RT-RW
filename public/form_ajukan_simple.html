@@ -16,7 +16,7 @@
                 <div class="card-body">
                     <p class="text-muted">Form ini <b>tanpa JavaScript</b> dan <b>tanpa upload file</b>. Jika berhasil, masalahnya di JavaScript atau file upload.</p>
 
-                    <form action="http://127.0.0.1:8000/ajukan" method="POST">
+                    <form action="/ajukan" method="POST">
                         <input type="hidden" name="_token" value="" id="csrf">
 
                         <div class="mb-3">
@@ -49,7 +49,7 @@
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-success">Kirim (No JS)</button>
-                            <a href="http://127.0.0.1:8000/dashboard" class="btn btn-outline-secondary">Kembali</a>
+                            <a href="/dashboard" class="btn btn-outline-secondary">Kembali</a>
                         </div>
                     </form>
 
@@ -57,7 +57,7 @@
                     <div class="alert alert-info">
                         <b>Cara pakai:</b>
                         <ol>
-                            <li>Login dulu ke <a href="http://127.0.0.1:8000/login" target="_blank">http://127.0.0.1:8000/login</a></li>
+                            <li>Login dulu ke <a href="/login" target="_blank">halaman login</a></li>
                             <li>Buka halaman ini di tab SAMA (bukan tab baru)</li>
                             <li>Klik tombol <b>Kirim (No JS)</b></li>
                         </ol>
@@ -66,7 +66,7 @@
     </div>
 <script>
 // Auto-ambil CSRF token dari page lain (buka di tab yang sama setelah login)
-fetch('http://127.0.0.1:8000/ajukan').then(r => r.text()).then(t => {
+fetch('/ajukan').then(r => r.text()).then(t => {
     const match = t.match(/name="_token" value="([^"]+)"/);
     if (match) document.getElementById('csrf').value = match[1];
 });

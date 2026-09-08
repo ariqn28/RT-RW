@@ -61,7 +61,7 @@
             <li>Jika <b>Test 3 Gagal</b> → File terlalu besar atau PHP upload error. Coba file < 500KB</li>
             <li>Jika semua test <b>Berhasil</b> tapi form pengajuan masih error → Login ulang ke aplikasi</li>
         </ol>
-        <a href="http://127.0.0.1:8000/login" class="btn btn-primary">Ke Halaman Login</a>
+        <a href="/login" class="btn btn-primary">Ke Halaman Login</a>
         <button class="btn btn-outline-secondary" onclick="clearBrowserCache()">Clear Cache Browser (JavaScript)</button>
     </div>
 
@@ -80,7 +80,7 @@
         const statusEl = document.getElementById('server-status');
         statusEl.innerHTML = '<span class="warning">Memeriksa...</span>';
         
-        fetch('http://127.0.0.1:8000/test_pure_post.html', { method: 'GET' })
+        fetch('/test_pure_post.html', { method: 'GET' })
             .then(r => {
                 if (r.ok) {
                     statusEl.innerHTML = '<span class="success">Server BERJALAN (HTTP 200)</span>';
@@ -100,7 +100,7 @@
         
         const formData = new FormData(e.target);
         
-        fetch('http://127.0.0.1:8000/test_pure_post.php', {
+        fetch('/test_pure_post.php', {
             method: 'POST',
             body: new URLSearchParams(new FormData(e.target))
         })
@@ -134,7 +134,7 @@
         // Gunakan test_pure_post.php sebagai fallback karena tidak butuh Laravel
         const formData = new FormData(e.target);
         
-        fetch('http://127.0.0.1:8000/test_pure_post.php', {
+        fetch('/test_pure_post.php', {
             method: 'POST',
             body: formData
         })
