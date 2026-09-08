@@ -116,6 +116,44 @@
             .catch(err => console.error('Error:', err));
     }, 3000); // Cek data baru setiap 3 detik secara otomatis
 </script>
+
+<section>
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-gray-800">Berita Terbaru</h3>
+        <a href="{{ route('informasi.index') }}" class="text-xs font-bold text-blue-600">Lihat semua</a>
+    </div>
+    @forelse($latestAnnouncements as $announcement)
+        <a href="{{ route('informasi.index') }}" class="block bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-2">
+            <p class="text-[10px] text-blue-600 font-bold">{{ $announcement->created_at->format('d M Y') }}</p>
+            <h4 class="font-bold text-gray-800 text-sm mt-1">{{ $announcement->title }}</h4>
+            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ $announcement->body }}</p>
+        </a>
+    @empty
+        <p class="bg-blue-50 text-blue-800 rounded-2xl p-4 text-sm">Belum ada berita terbaru.</p>
+    @endforelse
+</section>
+
+<section>
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-gray-800">Iuran Aktif</h3>
+        <a href="{{ route('iuran.index') }}" class="text-xs font-bold text-emerald-600">Lihat semua</a>
+    </div>
+    @forelse($activeDues as $due)
+        <a href="{{ route('iuran.index') }}" class="flex items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-2">
+            <div>
+                <h4 class="font-bold text-gray-800 text-sm">{{ $due->title }}</h4>
+                <p class="text-xs text-gray-500 mt-1">{{ $due->due_date ? 'Batas ' . $due->due_date->format('d M Y') : 'Informasi pembayaran tersedia' }}</p>
+                @if($due->payment_methods)
+                    <p class="text-[10px] text-emerald-700 font-semibold mt-1">{{ collect($due->payment_methods)->map(fn ($method) => ['qris' => 'QRIS', 'cash' => 'Cash', 'transfer' => 'Transfer'][$method] ?? $method)->implode(' · ') }}</p>
+                @endif
+            </div>
+            <strong class="text-sm text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
+        </a>
+    @empty
+        <p class="bg-emerald-50 text-emerald-800 rounded-2xl p-4 text-sm">Belum ada iuran aktif.</p>
+    @endforelse
+</section>
+
     <div>
     <h3 class="font-bold text-gray-800 mb-3">LAYANAN UTAMA RT/RW</h3>
     <div class="grid grid-cols-2 gap-3">
@@ -149,12 +187,17 @@
     </button>
 
     <div x-show="open" @click.away="open = false" class="mt-2 grid grid-cols-2 gap-2">
-        <a href="https://wa.me/628123456789" target="_blank" class="bg-white p-3 rounded-xl border border-amber-200 text-center text-xs font-bold text-amber-800">
+        @if($contact->whatsapp)
+        @php($wa = preg_replace('/[^0-9]/', '', $contact->whatsapp))
+        <a href="https://wa.me/{{ $wa }}?text={{ urlencode($contact->chat_greeting) }}" target="_blank" rel="noopener" class="bg-white p-3 rounded-xl border border-amber-200 text-center text-xs font-bold text-amber-800">
             WhatsApp
         </a>
         <button type="button" @click="chatOpen = true; open = false" class="bg-white p-3 rounded-xl border border-amber-200 text-center text-xs font-bold text-amber-800">
             Live Chat
         </button>
+        @else
+        <p class="col-span-2 text-xs text-amber-800">Kontak pengurus belum diatur.</p>
+        @endif
     </div>
 
     <div x-show="chatOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
@@ -165,8 +208,11 @@
                 <button @click="chatOpen = false">X</button>
             </div>
             <div class="flex-1 p-4 bg-gray-50 overflow-y-auto">
-                Halo, ada yang bisa dibantu?
+                {{ $contact->chat_greeting }}
             </div>
+            @if($contact->whatsapp)
+            <a href="https://wa.me/{{ $wa }}?text={{ urlencode($contact->chat_greeting) }}" target="_blank" rel="noopener" class="m-4 mt-0 bg-emerald-600 text-white text-center rounded-xl py-3 font-bold">Lanjutkan ke WhatsApp</a>
+            @endif
         </div>
     </div>
 </div>

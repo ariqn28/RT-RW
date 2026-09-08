@@ -5,7 +5,7 @@
 @if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div><h2 class="h4 mb-1">Konten Warga</h2><p class="text-muted mb-0">Kelola berita, iuran, dan kontak yang tampil di aplikasi warga.</p></div>
+    <div><h2 class="h4 mb-1">Iuran &amp; Konten Warga</h2><p class="text-muted mb-0">Terbitkan iuran, pilih metode QRIS/cash/transfer, dan kelola informasi warga.</p></div>
     <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Kembali</a>
 </div>
 

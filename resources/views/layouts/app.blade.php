@@ -100,6 +100,14 @@
     </style>
 </head>
 <body>
+@php
+    $homeRoute = match (auth()->user()->role) {
+        'rt' => 'dashboard.rt',
+        'rw' => 'dashboard.rw',
+        'admin' => 'dashboard',
+        default => 'warga.dashboard',
+    };
+@endphp
 <div class="d-flex">
     <aside class="sidebar p-4 d-flex flex-column justify-content-between">
         <div>
@@ -111,14 +119,17 @@
                 </div>
             </div>
             <ul class="nav flex-column gap-2">
-                <li class="nav-item"><a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="bi bi-house"></i>Dashboard</a></li>
+                <li class="nav-item"><a href="{{ route($homeRoute) }}" class="nav-link {{ request()->routeIs($homeRoute) ? 'active' : '' }}"><i class="bi bi-house"></i>Dashboard</a></li>
                 @if(auth()->user()->role === 'warga')
                 <li class="nav-item"><a href="{{ route('ajukan') }}" class="nav-link {{ request()->routeIs('ajukan') ? 'active' : '' }}"><i class="bi bi-pencil"></i>Ajukan Surat</a></li>
                 @endif
-                <li class="nav-item"><a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="bi bi-bar-chart-line"></i>Status</a></li>
+                <li class="nav-item"><a href="{{ route($homeRoute) }}" class="nav-link {{ request()->routeIs($homeRoute) ? 'active' : '' }}"><i class="bi bi-bar-chart-line"></i>Status</a></li>
                 <li class="nav-item"><a href="{{ route('riwayat') }}" class="nav-link {{ request()->routeIs('riwayat') ? 'active' : '' }}"><i class="bi bi-clock-history"></i>Riwayat</a></li>
                 @if(auth()->user()->role === 'admin')
                 <li class="nav-item"><a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="bi bi-person"></i>User</a></li>
+                @endif
+                @if(in_array(auth()->user()->role, ['admin', 'rt', 'rw']))
+                <li class="nav-item"><a href="{{ route('admin.content.index') }}" class="nav-link {{ request()->routeIs('admin.content.*') ? 'active' : '' }}"><i class="bi bi-wallet2"></i>Iuran &amp; Konten</a></li>
                 @endif
                 <li class="nav-item"><a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}"><i class="bi bi-gear"></i>Pengaturan</a></li>
             </ul>
@@ -149,15 +160,18 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><span class="dropdown-item-text small text-muted">{{ auth()->user()->email }}</span></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-house-door me-2"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ route($homeRoute) }}"><i class="bi bi-house-door me-2"></i>Dashboard</a></li>
                             @if(auth()->user()->role === 'warga')
                             <li><a class="dropdown-item" href="{{ route('ajukan') }}"><i class="bi bi-file-earmark-plus me-2"></i>Ajukan Surat</a></li>
                             @endif
                             @if(in_array(auth()->user()->role, ['rt', 'rw']))
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-list-check me-2"></i>Daftar Pengajuan</a></li>
+                            <li><a class="dropdown-item" href="{{ route($homeRoute) }}"><i class="bi bi-list-check me-2"></i>Daftar Pengajuan</a></li>
                             @endif
                             @if(auth()->user()->role === 'admin')
                             <li><a class="dropdown-item" href="{{ route('admin.users.index') }}"><i class="bi bi-people me-2"></i>Manajemen User</a></li>
+                            @endif
+                            @if(in_array(auth()->user()->role, ['admin', 'rt', 'rw']))
+                            <li><a class="dropdown-item" href="{{ route('admin.content.index') }}"><i class="bi bi-wallet2 me-2"></i>Iuran &amp; Konten</a></li>
                             @endif
                             <li><hr class="dropdown-divider"></li>
 
