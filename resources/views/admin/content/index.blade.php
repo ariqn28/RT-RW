@@ -78,4 +78,19 @@
     @endforeach
     @if($announcements->isEmpty() && $dues->isEmpty())<p class="text-muted mb-0">Belum ada konten terbit.</p>@endif
 </div>
+
+<div class="card card-panel p-4 mt-4">
+    <h5 class="mb-3">Pilihan Pembayaran Warga</h5>
+    @forelse($paymentRequests as $paymentRequest)
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <span>
+                <strong>{{ $paymentRequest->user->name }}</strong>
+                <small class="text-muted d-block">{{ $paymentRequest->due->title }} · Rp {{ number_format($paymentRequest->due->amount, 0, ',', '.') }}</small>
+            </span>
+            <span class="badge text-bg-warning">{{ ['qris' => 'QRIS', 'cash' => 'Cash', 'transfer' => 'Transfer'][$paymentRequest->payment_method] ?? $paymentRequest->payment_method }} · {{ ucfirst($paymentRequest->status) }}</span>
+        </div>
+    @empty
+        <p class="text-muted mb-0">Belum ada warga yang memilih metode pembayaran.</p>
+    @endforelse
+</div>
 @endsection

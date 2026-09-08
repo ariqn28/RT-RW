@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\ContactSetting;
 use App\Models\Due;
+use App\Models\PaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -15,6 +16,7 @@ class ContentController extends Controller
         return view('admin.content.index', [
             'announcements' => Announcement::latest()->get(),
             'dues' => Due::latest()->get(),
+            'paymentRequests' => PaymentRequest::with(['due', 'user'])->latest()->get(),
             'contact' => ContactSetting::firstOrCreate(['id' => 1]),
         ]);
     }

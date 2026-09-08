@@ -101,6 +101,7 @@ Route::middleware(['auth'])->group(function () {
 // Pastikan route ini ada di dalam group 'auth'
 Route::middleware(['auth'])->group(function () {
     Route::get('/iuran', [IuranController::class, 'index'])->name('iuran.index');
+    Route::post('/iuran/{due}/metode', [IuranController::class, 'choosePaymentMethod'])->name('iuran.payment-method');
 });
    Route::middleware(['auth'])->group(function () {
     // ... rute lainnya
