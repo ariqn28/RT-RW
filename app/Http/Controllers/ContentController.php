@@ -6,6 +6,8 @@ use App\Models\Announcement;
 use App\Models\ContactSetting;
 use App\Models\Due;
 use App\Models\PaymentRequest;
+use App\Models\DueAssignment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -17,6 +19,7 @@ class ContentController extends Controller
             'announcements' => Announcement::latest()->get(),
             'dues' => Due::latest()->get(),
             'paymentRequests' => PaymentRequest::with(['due', 'user'])->latest()->get(),
+            'residents' => User::where('role', 'warga')->orderBy('name')->get(),
             'contact' => ContactSetting::firstOrCreate(['id' => 1]),
         ]);
     }
@@ -62,6 +65,9 @@ class ContentController extends Controller
             'account_holder' => ['nullable', 'string', 'max:120'],
             'bifast_number' => ['nullable', 'string', 'max:50'],
             'cash_payment_info' => ['nullable', 'string', 'max:255'],
+            'residents' => ['nullable', 'array'],
+            'residents.*.user_id' => ['required', 'distinct', 'exists:users,id'],
+            'residents.*.amount' => ['required', 'integer', 'min:0'],
         ]);
 
         if (in_array('qris', $data['payment_methods'], true) && ! $request->hasFile('qris_image')) {
@@ -84,8 +90,18 @@ class ContentController extends Controller
             $data['qris_image_path'] = 'uploads/qris/' . $filename;
         }
 
+        $residents = $data['residents'] ?? [];
+        unset($data['qris_image'], $data['residents']);
         $data['user_id'] = $request->user()->id;
-        Due::create($data);
+        $due = Due::create($data);
+
+        foreach ($residents as $resident) {
+            DueAssignment::create([
+                'due_id' => $due->id,
+                'user_id' => $resident['user_id'],
+                'amount' => $resident['amount'],
+            ]);
+        }
 
         return back()->with('success', 'Informasi iuran berhasil ditambahkan.');
     }

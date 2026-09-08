@@ -12,12 +12,12 @@ class IuranController extends Controller
     public function index()
     {
         $paymentRequests = PaymentRequest::where('user_id', auth()->id())
-            ->whereIn('due_id', Due::where('is_active', true)->pluck('id'))
+            ->whereIn('due_id', Due::where('is_active', true)->visibleTo(auth()->id())->pluck('id'))
             ->get()
             ->keyBy('due_id');
 
         return view('warga.iuran', [
-            'dues' => Due::where('is_active', true)->latest('due_date')->latest()->get(),
+            'dues' => Due::with('assignments')->where('is_active', true)->visibleTo(auth()->id())->latest('due_date')->latest()->get(),
             'contact' => ContactSetting::firstOrCreate(['id' => 1]),
             'paymentRequests' => $paymentRequests,
         ]);
@@ -30,6 +30,12 @@ class IuranController extends Controller
         ]);
 
         abort_unless($due->is_active, 404);
+
+        abort_unless(
+            ! $due->assignments()->exists()
+                || $due->assignments()->where('user_id', auth()->id())->exists(),
+            403
+        );
 
         if (! in_array($data['payment_method'], $due->payment_methods ?? [], true)) {
             return back()->withErrors(['payment_method' => 'Metode pembayaran tersebut tidak tersedia untuk iuran ini.']);

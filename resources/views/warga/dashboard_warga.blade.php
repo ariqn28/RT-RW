@@ -148,7 +148,7 @@
                 @endif
             </div>
             <span class="text-right">
-                <strong class="block text-sm text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
+                <strong class="block text-sm text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amountFor(auth()->id()), 0, ',', '.') }}</strong>
                 <span class="mt-2 inline-block rounded-lg bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white">Bayar</span>
             </span>
         </a>

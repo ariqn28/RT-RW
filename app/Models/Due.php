@@ -14,4 +14,24 @@ class Due extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function assignments()
+    {
+        return $this->hasMany(DueAssignment::class);
+    }
+
+    public function amountFor(?int $userId): int
+    {
+        $assignment = $this->assignments->firstWhere('user_id', $userId);
+
+        return $assignment?->amount ?? $this->amount;
+    }
+
+    public function scopeVisibleTo($query, int $userId)
+    {
+        return $query->where(function ($query) use ($userId) {
+            $query->whereDoesntHave('assignments')
+                ->orWhereHas('assignments', fn ($assignment) => $assignment->where('user_id', $userId));
+        });
+    }
 }

@@ -46,6 +46,9 @@
                 <div class="col-md-6"><label class="form-label">Nama penerima</label><input name="account_holder" class="form-control"></div>
                 <div class="col-md-6"><label class="form-label">Nomor BI-FAST (opsional)</label><input name="bifast_number" class="form-control"></div>
                 <div class="col-12"><label class="form-label">Instruksi cash</label><input name="cash_payment_info" class="form-control" placeholder="Datang ke rumah Pak RT setiap sore atau hubungi bendahara"></div>
+                <div class="col-12"><hr><strong>Nominal khusus warga</strong> <small class="text-muted">(kosongkan jika iuran berlaku untuk semua warga)</small></div>
+                <div id="resident-assignments" class="col-12"></div>
+                <div class="col-12"><button type="button" class="btn btn-outline-secondary btn-sm" onclick="addResidentAssignment()">+ Tambah warga dan nominal</button></div>
                 <div class="col-12"><button class="btn btn-success">Terbitkan Iuran</button></div>
             </form>
         </div>
@@ -99,4 +102,19 @@
         <p class="text-muted mb-0">Belum ada warga yang memilih metode pembayaran.</p>
     @endforelse
 </div>
+<script>
+    let residentAssignmentIndex = 0;
+    const residentOptions = @json($residents->map(fn ($resident) => ['id' => $resident->id, 'name' => $resident->name, 'email' => $resident->email]));
+
+    function addResidentAssignment() {
+        const options = residentOptions.map((resident) => `<option value="${resident.id}">${resident.name} (${resident.email})</option>`).join('');
+        document.getElementById('resident-assignments').insertAdjacentHTML('beforeend', `
+            <div class="row g-2 mb-2 resident-assignment">
+                <div class="col-md-7"><select name="residents[${residentAssignmentIndex}][user_id]" class="form-select" required><option value="">Pilih warga</option>${options}</select></div>
+                <div class="col-md-4"><input type="number" name="residents[${residentAssignmentIndex}][amount]" class="form-control" min="0" placeholder="Nominal Rp" required></div>
+                <div class="col-md-1"><button type="button" class="btn btn-outline-danger" onclick="this.closest('.resident-assignment').remove()">X</button></div>
+            </div>`);
+        residentAssignmentIndex++;
+    }
+</script>
 @endsection

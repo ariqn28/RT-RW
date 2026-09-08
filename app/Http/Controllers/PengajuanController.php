@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Pengajuan;
 use App\Models\PengajuanStatusHistory;
 use App\Models\User;
+use App\Models\ContactSetting;
+use App\Models\Announcement;
+use App\Models\Due;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,7 +30,10 @@ class PengajuanController extends Controller
             'SETUJU' => Pengajuan::where('user_id', $user->id)->whereIn('status', ['disetujui_rt', 'diterima'])->count(),
             'TOLAK'  => Pengajuan::where('user_id', $user->id)->where('status', 'ditolak')->count(),
         ];
-        return view('warga.dashboard_warga', compact('counts'));
+        $contact = ContactSetting::firstOrCreate(['id' => 1]);
+        $latestAnnouncements = Announcement::where('is_published', true)->latest()->take(3)->get();
+        $activeDues = Due::with('assignments')->where('is_active', true)->visibleTo($user->id)->latest('due_date')->latest()->take(3)->get();
+        return view('warga.dashboard_warga', compact('counts', 'contact', 'latestAnnouncements', 'activeDues'));
     }
 
     // 2. Logika untuk ADMIN

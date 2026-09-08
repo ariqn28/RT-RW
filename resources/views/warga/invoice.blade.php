@@ -21,7 +21,7 @@
 
         <div class="flex items-center justify-between py-4">
             <span class="text-sm text-gray-500">Total pembayaran</span>
-            <strong class="text-xl text-emerald-700">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
+            <strong class="text-xl text-emerald-700">Rp {{ number_format($due->amountFor(auth()->id()), 0, ',', '.') }}</strong>
         </div>
 
         <div class="rounded-xl bg-gray-50 p-4 text-sm">

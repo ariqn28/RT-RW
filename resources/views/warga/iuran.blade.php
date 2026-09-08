@@ -20,7 +20,7 @@
         <article id="iuran-{{ $due->id }}" class="bg-white border border-gray-100 rounded-2xl p-4 mb-3 shadow-sm">
             <div class="flex justify-between gap-3">
                 <h3 class="font-bold text-gray-800">{{ $due->title }}</h3>
-                <strong class="text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
+                <strong class="text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amountFor(auth()->id()), 0, ',', '.') }}</strong>
             </div>
             <div class="mt-2 flex items-center justify-between text-xs">
                 @php($selectedRequest = $paymentRequests->get($due->id))
