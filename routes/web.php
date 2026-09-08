@@ -102,6 +102,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/iuran', [IuranController::class, 'index'])->name('iuran.index');
     Route::post('/iuran/{due}/metode', [IuranController::class, 'choosePaymentMethod'])->name('iuran.payment-method');
+    Route::get('/iuran/invoice/{paymentRequest}', [IuranController::class, 'invoice'])->name('iuran.invoice');
 });
    Route::middleware(['auth'])->group(function () {
     // ... rute lainnya

@@ -35,11 +35,20 @@ class IuranController extends Controller
             return back()->withErrors(['payment_method' => 'Metode pembayaran tersebut tidak tersedia untuk iuran ini.']);
         }
 
-        PaymentRequest::updateOrCreate(
+        $paymentRequest = PaymentRequest::updateOrCreate(
             ['due_id' => $due->id, 'user_id' => auth()->id()],
             ['payment_method' => $data['payment_method'], 'status' => 'menunggu']
         );
 
-        return back()->with('success', 'Pilihan pembayaran tersimpan. Silakan selesaikan pembayaran sesuai instruksi pengurus.');
+        return redirect()->route('iuran.invoice', $paymentRequest)->with('success', 'Invoice pembayaran berhasil dibuat.');
+    }
+
+    public function invoice(PaymentRequest $paymentRequest)
+    {
+        abort_unless($paymentRequest->user_id === auth()->id(), 403);
+
+        return view('warga.invoice', [
+            'paymentRequest' => $paymentRequest->load('due', 'user'),
+        ]);
     }
 }

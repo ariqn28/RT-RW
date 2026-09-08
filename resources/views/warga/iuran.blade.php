@@ -62,7 +62,7 @@
                     </div>
                     <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-600 px-3 py-3 text-sm font-bold text-white">{{ $selectedMethod ? 'Ubah pilihan pembayaran' : 'Lanjutkan pembayaran' }}</button>
                     @if($selectedMethod)
-                        <p class="mt-2 text-center text-[10px] text-amber-700">Pilihan tersimpan, menunggu konfirmasi pengurus.</p>
+                        <a href="{{ route('iuran.invoice', $selectedRequest) }}" class="mt-2 block text-center text-xs font-bold text-emerald-700">Lihat invoice pembayaran</a>
                     @endif
                 </form>
                 @if($selectedMethod === 'qris' && $due->qris_image_path)
