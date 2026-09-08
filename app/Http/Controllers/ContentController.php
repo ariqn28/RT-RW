@@ -57,10 +57,20 @@ class ContentController extends Controller
             'payment_methods' => ['required', 'array', 'min:1'],
             'payment_methods.*' => ['in:qris,cash,transfer'],
             'qris_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'bank_name' => ['nullable', 'string', 'max:80'],
+            'account_number' => ['nullable', 'string', 'max:50'],
+            'account_holder' => ['nullable', 'string', 'max:120'],
+            'bifast_number' => ['nullable', 'string', 'max:50'],
+            'cash_payment_info' => ['nullable', 'string', 'max:255'],
         ]);
 
         if (in_array('qris', $data['payment_methods'], true) && ! $request->hasFile('qris_image')) {
             return back()->withErrors(['qris_image' => 'Upload gambar QRIS jika metode QRIS dipilih.'])->withInput();
+        }
+
+        if (in_array('transfer', $data['payment_methods'], true)
+            && (! $data['bank_name'] || ! $data['account_number'] || ! $data['account_holder'])) {
+            return back()->withErrors(['bank_name' => 'Isi bank, nomor rekening, dan nama penerima jika transfer dipilih.'])->withInput();
         }
 
         if ($request->hasFile('qris_image')) {

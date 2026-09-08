@@ -40,6 +40,12 @@
                     </div>
                 </div>
                 <div class="col-12"><label class="form-label">Gambar QRIS (wajib jika QRIS dipilih, maksimal 4 MB)</label><input type="file" name="qris_image" class="form-control" accept="image/jpeg,image/png,image/webp"></div>
+                <div class="col-12"><hr><strong>Detail transfer</strong> <small class="text-muted">(wajib jika Transfer dipilih)</small></div>
+                <div class="col-md-6"><label class="form-label">Nama bank</label><input name="bank_name" class="form-control" placeholder="BCA, BRI, Mandiri"></div>
+                <div class="col-md-6"><label class="form-label">Nomor rekening</label><input name="account_number" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Nama penerima</label><input name="account_holder" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Nomor BI-FAST (opsional)</label><input name="bifast_number" class="form-control"></div>
+                <div class="col-12"><label class="form-label">Instruksi cash</label><input name="cash_payment_info" class="form-control" placeholder="Datang ke rumah Pak RT setiap sore atau hubungi bendahara"></div>
                 <div class="col-12"><button class="btn btn-success">Terbitkan Iuran</button></div>
             </form>
         </div>

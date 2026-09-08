@@ -23,7 +23,8 @@
                 <strong class="text-emerald-700 whitespace-nowrap">Rp {{ number_format($due->amount, 0, ',', '.') }}</strong>
             </div>
             <div class="mt-2 flex items-center justify-between text-xs">
-                <span class="font-semibold text-red-600">Belum dibayar</span>
+                @php($selectedRequest = $paymentRequests->get($due->id))
+                <span class="font-semibold {{ $selectedRequest ? 'text-amber-600' : 'text-red-600' }}">{{ $selectedRequest ? 'Menunggu konfirmasi' : 'Belum dibayar' }}</span>
                 <span class="text-gray-500">Total tagihan</span>
             </div>
             @if($due->description)<p class="text-sm text-gray-600 mt-2">{{ $due->description }}</p>@endif
@@ -36,14 +37,8 @@
                     @endforeach
                 </div>
             @endif
-            @if($due->qris_image_path && in_array('qris', $due->payment_methods ?? [], true))
-                <div class="mt-4 border-t border-gray-100 pt-3">
-                    <p class="text-xs font-semibold text-gray-600 mb-2">Scan QRIS untuk membayar</p>
-                    <img src="{{ asset($due->qris_image_path) }}" alt="QRIS {{ $due->title }}" class="max-w-[220px] rounded-lg border border-gray-200">
-                </div>
-            @endif
             @if($due->payment_methods)
-                @php($selectedMethod = optional($paymentRequests->get($due->id))->payment_method)
+                @php($selectedMethod = optional($selectedRequest)->payment_method)
                 <form method="POST" action="{{ route('iuran.payment-method', $due) }}" class="mt-4 border-t border-gray-100 pt-3">
                     @csrf
                     <div class="mb-3 flex items-center justify-between">
@@ -70,6 +65,25 @@
                         <p class="mt-2 text-center text-[10px] text-amber-700">Pilihan tersimpan, menunggu konfirmasi pengurus.</p>
                     @endif
                 </form>
+                @if($selectedMethod === 'qris' && $due->qris_image_path)
+                    <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+                        <p class="text-xs font-bold text-emerald-800 mb-2">Bayar sekarang melalui QRIS</p>
+                        <img src="{{ asset($due->qris_image_path) }}" alt="QRIS {{ $due->title }}" class="max-w-[220px] rounded-lg border border-gray-200">
+                    </div>
+                @elseif($selectedMethod === 'cash')
+                    <div class="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs text-amber-900">
+                        <strong>Bayar cash</strong>
+                        <p class="mt-1">{{ $due->cash_payment_info ?: 'Silakan datang ke rumah atau kantor Pak RT/RW untuk melakukan pembayaran.' }}</p>
+                    </div>
+                @elseif($selectedMethod === 'transfer')
+                    <div class="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900">
+                        <strong>Bayar melalui transfer</strong>
+                        <p class="mt-1">{{ $due->bank_name }} · {{ $due->account_number }}</p>
+                        <p>Atas nama: {{ $due->account_holder }}</p>
+                        @if($due->bifast_number)<p>BI-FAST: {{ $due->bifast_number }}</p>@endif
+                        <p class="mt-2">Setelah transfer, simpan bukti dan hubungi pengurus untuk konfirmasi.</p>
+                    </div>
+                @endif
             @endif
         </article>
     @empty
