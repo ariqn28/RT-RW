@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -25,23 +24,20 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
+            'role' => 'required|in:warga,admin,rt,rw',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // Untuk registrasi publik, peran harus selalu 'warga' untuk keamanan.
-        // Pembuatan user RT/RW/Admin sebaiknya hanya melalui panel admin.
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'warga',
+            'role' => strtolower(trim($validated['role'])),
         ]);
-
 
         Auth::login($user);
 
-        // Warga langsung masuk ke dashboard warga setelah registrasi.
-        return redirect()->route('warga.dashboard');
+        return redirect()->route($this->dashboardRoute($user->role));
     }
 
     public function authenticate(Request $request)
@@ -51,25 +47,31 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Jangan biarkan session user sebelumnya ikut terbawa saat berganti akun.
+        // Hapus session/login akun sebelumnya
         Auth::logout();
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            $role = strtolower(trim((string) Auth::user()->role));
+            $user = Auth::user();
+
+            // Pastikan role selalu konsisten
+            $role = strtolower(trim((string) $user->role));
+
             return redirect()->route($this->dashboardRoute($role));
         }
-
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',
         ])->onlyInput('email');
     }
 
+    /**
+     * Menentukan dashboard berdasarkan role user.
+     */
     private function dashboardRoute(string $role): string
     {
-        return match ($role) {
+        return match (strtolower(trim($role))) {
             'warga' => 'warga.dashboard',
             'rt' => 'dashboard.rt',
             'rw' => 'dashboard.rw',

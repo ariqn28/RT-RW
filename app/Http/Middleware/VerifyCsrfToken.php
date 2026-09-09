@@ -24,9 +24,6 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        // The ngrok interstitial can serve a stale login page before Laravel.
-        // Login has no state-changing business action; all authenticated forms
-        // remain protected by CSRF verification.
-        'login',
+        //
     ];
 }

@@ -23,7 +23,7 @@ class ProfileController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'nik' => 'nullable|string|max:20',
             'alamat' => 'nullable|string|max:500',
-            'current_password' => ['nullable', 'current_password'],
+            'current_password' => ['required_with:password', 'current_password'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 

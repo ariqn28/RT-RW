@@ -11,35 +11,42 @@ class ProfileWifiSettingsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_update_wifi_credentials_from_profile_settings()
+    public function test_user_can_update_profile_info()
+    {
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'old@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('oldpassword123'),
+        ]);
+
+        $response = $this->actingAs($user)->put(route('profile.update'), [
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+            'nik' => '3273010101000099',
+            'alamat' => 'Jl Baru No. 1',
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $user->refresh();
+        $this->assertEquals('New Name', $user->name);
+        $this->assertEquals('new@example.com', $user->email);
+    }
+
+    public function test_user_must_provide_current_password_to_change_password()
     {
         $user = User::factory()->create([
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'user@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('oldpassword123'),
         ]);
 
-        $envPath = base_path('.env');
-        $originalEnv = file_exists($envPath) ? file_get_contents($envPath) : '';
+        $response = $this->actingAs($user)->put(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
 
-        try {
-            $this->withoutMiddleware([VerifyCsrfToken::class]);
-
-            $response = $this->actingAs($user)->put(route('profile.update'), [
-                'name' => $user->name,
-                'email' => $user->email,
-                'nik' => '',
-                'alamat' => '',
-                'wifi_ssid' => 'RT_RW_WIFI',
-                'wifi_password' => 'SecurePass123',
-            ]);
-
-            $response->assertRedirect(route('profile.edit'));
-
-            $updatedEnv = file_get_contents($envPath);
-            $this->assertStringContainsString('WIFI_SSID=RT_RW_WIFI', $updatedEnv);
-            $this->assertStringContainsString('WIFI_PASSWORD=SecurePass123', $updatedEnv);
-        } finally {
-            file_put_contents($envPath, $originalEnv);
-        }
+        $response->assertSessionHasErrors(['current_password']);
     }
 }

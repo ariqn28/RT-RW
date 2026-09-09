@@ -7,6 +7,7 @@ use App\Models\Pengajuan;
 use App\Models\PengajuanStatusHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MobilePengajuanController extends Controller
 {
@@ -44,8 +45,9 @@ class MobilePengajuanController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('pengajuan_files', $fileName, 'public');
+            $extension = $file->getClientOriginalExtension();
+            $fileName = (string) Str::uuid() . ($extension ? '.' . strtolower($extension) : '');
+            $filePath = $file->storeAs('pengajuan_files', $fileName, 'local');
             $validated['file_path'] = $filePath;
         }
 
@@ -74,6 +76,29 @@ class MobilePengajuanController extends Controller
         return response()->json([
             'data' => $pengajuan,
         ]);
+    }
+
+    public function downloadFile(Request $request, Pengajuan $pengajuan)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'warga' && $pengajuan->user_id !== $user->id) {
+            return response()->json(['message' => 'Akses ditolak.'], 403);
+        }
+
+        if (!$pengajuan->file_path) {
+            return response()->json(['message' => 'Berkas tidak ditemukan.'], 404);
+        }
+
+        if (Storage::disk('local')->exists($pengajuan->file_path)) {
+            return Storage::disk('local')->download($pengajuan->file_path);
+        }
+
+        if (Storage::disk('public')->exists($pengajuan->file_path)) {
+            return Storage::disk('public')->download($pengajuan->file_path);
+        }
+
+        return response()->json(['message' => 'Berkas fisik tidak ditemukan.'], 404);
     }
 }
 

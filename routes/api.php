@@ -25,7 +25,7 @@ use App\Http\Controllers\Api\MobileRiwayatController;
 
 
 
-Route::match(['GET', 'POST'], '/mobile/login', [MobileAuthController::class, 'mobileLogin']);
+Route::match(['GET', 'POST'], '/mobile/login', [MobileAuthController::class, 'mobileLogin'])->middleware('throttle:10,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [MobileProfileController::class, 'index']);
@@ -34,9 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pengajuan', [MobilePengajuanController::class, 'index']);
     Route::post('/pengajuan', [MobilePengajuanController::class, 'store']);
     Route::get('/pengajuan/{pengajuan}', [MobilePengajuanController::class, 'show']);
+    Route::get('/pengajuan/{pengajuan}/berkas', [MobilePengajuanController::class, 'downloadFile']);
 
     Route::get('/riwayat', [MobileRiwayatController::class, 'index']);
-
 
     Route::post('/logout', [MobileAuthController::class, 'logout']);
 });

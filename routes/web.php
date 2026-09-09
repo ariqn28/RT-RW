@@ -40,18 +40,18 @@ Route::get('/warga', function () {
 
 // Auth
 Route::get('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/login', [AuthController::class, 'authenticate']);
+Route::post('/login', [AuthController::class, 'authenticate'])->middleware('throttle:6,1');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'store'])->name('register.store');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Pengajuan (RT/RW saja)
+// Pengajuan (RT/RW/Warga)
 Route::middleware(['auth'])->group(function () {
     Route::get('/pengaturan', 'App\\Http\\Controllers\\ProfileController@edit')->name('profile.edit');
     Route::put('/pengaturan', 'App\\Http\\Controllers\\ProfileController@update')->name('profile.update');
 
-    // Admin routes (jaga kompatibilitas route: admin.users.*)
-    Route::middleware('role:admin,rt,rw')
+    // Admin routes (Role admin saja untuk manajemen user)
+    Route::middleware('role:admin')
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
@@ -86,6 +86,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Status surat
     Route::get('/status/{pengajuan}', [PengajuanController::class, 'show'])->name('status.show');
+    // Unduh berkas terproteksi
+    Route::get('/pengajuan/{pengajuan}/berkas', [PengajuanController::class, 'downloadFile'])->name('pengajuan.download');
     // Riwayat
     Route::get('/riwayat', [PengajuanController::class, 'history'])->name('riwayat');
 
@@ -94,7 +96,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/status/{pengajuan}', [PengajuanController::class, 'update'])->middleware('role:rt,rw')->name('status.update');
 
     // Hapus pengajuan
-    Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->middleware('role:rt,rw')->name('status.destroy');
+    Route::delete('/status/{pengajuan}', [PengajuanController::class, 'destroy'])->name('status.destroy');
 });
 
 
@@ -103,15 +105,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/iuran', [IuranController::class, 'index'])->name('iuran.index');
     Route::post('/iuran/{due}/metode', [IuranController::class, 'choosePaymentMethod'])->name('iuran.payment-method');
     Route::get('/iuran/invoice/{paymentRequest}', [IuranController::class, 'invoice'])->name('iuran.invoice');
-});
-   Route::middleware(['auth'])->group(function () {
-    // ... rute lainnya
     Route::get('/informasi', [InformasiController::class, 'index'])->name('informasi.index');
+    Route::get('/warga/dashboard', [PengajuanController::class, 'index'])->name('warga.dashboard');
+    Route::get('/warga/stats', [PengajuanController::class, 'getStats'])->name('warga.stats');
 });
-
-// Tambahkan atau pastikan rute ini ada
-Route::middleware(['auth'])
-    ->get('/warga/dashboard', [PengajuanController::class, 'index'])
-    ->name('warga.dashboard');
-
-Route::get('/warga/stats', [App\Http\Controllers\PengajuanController::class, 'getStats'])->name('warga.stats');

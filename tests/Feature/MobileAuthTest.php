@@ -49,7 +49,7 @@ class MobileAuthTest extends TestCase
         $response = $this->getJson('/api/mobile/login');
 
         $response->assertStatus(405)
-            ->assertJsonPath('message', 'Gunakan method POST untuk login mobile.')
-            ->assertJsonPath('hint', 'Kirim request POST ke endpoint ini dari aplikasi mobile.');
+            ->assertJsonPath('message', 'Silakan gunakan metode POST untuk login mobile.')
+            ->assertJsonPath('hint', 'Kirim request POST ke endpoint ini dari aplikasi mobile atau browser.');
     }
 }

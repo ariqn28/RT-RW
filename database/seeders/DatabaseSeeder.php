@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Ketua RW 03', 'email' => 'rw03@example.com', 'role' => 'rw', 'nik' => '3273010303000303', 'alamat' => 'Sekretariat RW 03'],
             ['name' => 'Ketua RW 04', 'email' => 'rw04@example.com', 'role' => 'rw', 'nik' => '3273010404000404', 'alamat' => 'Sekretariat RW 04'],
             ['name' => 'Ketua RW 05', 'email' => 'rw05@example.com', 'role' => 'rw', 'nik' => '3273010505000505', 'alamat' => 'Sekretariat RW 05'],
+            ['name' => 'Administrator', 'email' => 'admin@example.com', 'role' => 'admin', 'nik' => '9999999999999999', 'alamat' => 'Kantor Pengelola'],
         ];
 
         foreach ($accounts as $account) {

@@ -11,6 +11,8 @@ use App\Models\Due;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PengajuanController extends Controller
 {
@@ -51,7 +53,7 @@ class PengajuanController extends Controller
     // 3. Logika untuk RT
     if ($user->role === 'rt') {
         $status = $request->input('status');
-        $pengajuanQuery = Pengajuan::latest();
+        $pengajuanQuery = Pengajuan::with('user')->latest();
         if (in_array($status, ['baru', 'disetujui_rt', 'diterima', 'ditolak'], true)) {
             $pengajuanQuery->where('status', $status);
         }
@@ -69,7 +71,7 @@ class PengajuanController extends Controller
 
     // 4. Logika untuk RW
     if ($user->role === 'rw') {
-        $pengajuan = Pengajuan::whereIn('status', ['disetujui_rt', 'diterima'])->latest()->paginate(10);
+        $pengajuan = Pengajuan::with('user')->whereIn('status', ['disetujui_rt', 'diterima'])->latest()->paginate(10);
         $rtPending = Pengajuan::where('status', 'disetujui_rt')->with('user')->latest()->take(5)->get();
         $counts = [
             'rt_pending' => Pengajuan::where('status', 'disetujui_rt')->count(),
@@ -144,10 +146,11 @@ public function getStats()
                         ->with('error', 'Ukuran file melebihi batas 2MB. Silakan kompres file atau upload file yang lebih kecil.');
                 }
 
-                $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-                $filePath = $file->storeAs('pengajuan_files', $fileName, 'public');
+                $extension = $file->getClientOriginalExtension();
+                $fileName = (string) Str::uuid() . ($extension ? '.' . strtolower($extension) : '');
+                $filePath = $file->storeAs('pengajuan_files', $fileName, 'local');
                 $validated['file_path'] = $filePath;
-                Log::info('File stored: ' . $filePath);
+                Log::info('File stored securely in local disk: ' . $filePath);
             }
 
             Log::info('Creating pengajuan record');
@@ -253,14 +256,50 @@ return redirect()->route('warga.dashboard')
         return view('pengajuan.edit', compact('pengajuan'));
     }
 
+    public function downloadFile(Pengajuan $pengajuan)
+    {
+        $user = auth()->user();
+
+        if ($user->role === 'warga' && $pengajuan->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses ke berkas ini.');
+        }
+
+        if (!$pengajuan->file_path) {
+            abort(404, 'Pengajuan ini tidak memiliki lampiran berkas.');
+        }
+
+        if (Storage::disk('local')->exists($pengajuan->file_path)) {
+            return Storage::disk('local')->download($pengajuan->file_path);
+        }
+
+        // Fallback untuk berkas yang sebelumnya disimpan di public disk
+        if (Storage::disk('public')->exists($pengajuan->file_path)) {
+            return Storage::disk('public')->download($pengajuan->file_path);
+        }
+
+        abort(404, 'Berkas fisik tidak ditemukan di penyimpanan server.');
+    }
+
     public function update(Request $request, Pengajuan $pengajuan)
     {
+        $role = auth()->user()->role;
         $validated = $request->validate([
             'status' => 'required|in:baru,disetujui_rt,diterima,ditolak',
         ]);
 
+        // RT tidak boleh langsung menyelesaikan ke 'diterima' tanpa verifikasi RW
+        if ($role === 'rt' && $validated['status'] === 'diterima') {
+            return redirect()->route('status.show', $pengajuan->id)
+                ->with('error', 'Persetujuan akhir hanya dapat dilakukan oleh RW.');
+        }
+
+        // RW hanya boleh menyetujui tahap akhir jika status sudah disetujui_rt
+        if ($role === 'rw' && $validated['status'] === 'diterima' && $pengajuan->status !== 'disetujui_rt') {
+            return redirect()->route('status.show', $pengajuan->id)
+                ->with('error', 'Pengajuan harus disetujui RT terlebih dahulu sebelum diterima oleh RW.');
+        }
+
         if ($pengajuan->status !== $validated['status']) {
-            $role = auth()->user()->role;
             $statusLabel = [
                 'disetujui_rt' => 'disetujui oleh RT.',
                 'diterima'     => 'disetujui oleh RW (Selesai).',
@@ -352,8 +391,32 @@ return redirect()->route('warga.dashboard')
 
     public function destroy(Pengajuan $pengajuan)
     {
+        $user = auth()->user();
+
+        // Warga hanya boleh menghapus miliknya sendiri jika statusnya masih 'baru'
+        if ($user->role === 'warga' && ($pengajuan->user_id !== $user->id || $pengajuan->status !== 'baru')) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        // Hapus file fisik dari storage jika ada
+        if ($pengajuan->file_path) {
+            if (Storage::disk('local')->exists($pengajuan->file_path)) {
+                Storage::disk('local')->delete($pengajuan->file_path);
+            } elseif (Storage::disk('public')->exists($pengajuan->file_path)) {
+                Storage::disk('public')->delete($pengajuan->file_path);
+            }
+        }
+
         $pengajuan->delete();
-        return redirect()->route('dashboard')
+
+        $redirectRoute = match ($user->role) {
+            'warga' => 'warga.dashboard',
+            'rt' => 'dashboard.rt',
+            'rw' => 'dashboard.rw',
+            default => 'dashboard',
+        };
+
+        return redirect()->route($redirectRoute)
                          ->with('success', 'Pengajuan berhasil dihapus!');
     }
 }

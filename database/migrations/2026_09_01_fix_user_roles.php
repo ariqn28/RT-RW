@@ -1,10 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -13,25 +10,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Fix user roles yang tidak konsisten
-        $users_data = [
-            [
-                'email' => 'ariqn@gmail.com',
-                'role' => 'warga',
-            ],
-            [
-                'email' => 'ariqns@gmail.com',
-                'role' => 'rt',
-            ],
-            [
-                'email' => 'ariqns280702@gmail.com',
-                'role' => 'rw',
-            ],
-        ];
-
-        foreach ($users_data as $data) {
-            User::where('email', $data['email'])->update(['role' => $data['role']]);
-        }
+        // User yang belum memiliki role akan menjadi warga.
+        User::whereNull('role')->update([
+            'role' => 'warga',
+        ]);
     }
 
     /**
@@ -39,6 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        // Tidak ada rollback karena ini adalah perbaikan data role.
     }
 };

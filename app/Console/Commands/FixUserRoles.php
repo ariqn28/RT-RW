@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class FixUserRoles extends Command
 {
@@ -19,7 +20,7 @@ class FixUserRoles extends Command
      *
      * @var string
      */
-    protected $description = 'Fix user roles yang tidak konsisten';
+    protected $description = 'Memperbaiki role user yang kosong atau tidak valid';
 
     /**
      * Execute the console command.
@@ -27,33 +28,44 @@ class FixUserRoles extends Command
     public function handle()
     {
         $this->info('=== FIX USER ROLES ===');
+        $this->info('Memeriksa role pengguna...');
 
-        // Data user yang benar
-        $users_to_fix = [
-            'ariqn@gmail.com' => 'warga',
-            'ariqns@gmail.com' => 'rt',
-            'ariqns280702@gmail.com' => 'rw',
-        ];
+        $validRoles = ['admin', 'rw', 'rt', 'warga'];
 
-        foreach ($users_to_fix as $email => $role) {
-            $user = User::where('email', $email)->first();
-            if ($user) {
-                $old_role = $user->role;
-                $user->update(['role' => $role]);
-                $this->info("✅ {$email}: {$old_role} → {$role}");
-            } else {
-                $this->warn("⚠️  {$email}: User tidak ditemukan");
-            }
+        $updated = User::where(function ($query) use ($validRoles) {
+            $query->whereNotIn('role', $validRoles)
+                ->orWhereNull('role');
+        })->update([
+            'role' => 'warga',
+        ]);
+
+        $this->info(
+            "Jumlah pengguna yang diperbaiki role-nya: {$updated}"
+        );
+
+        $this->line('');
+        $this->info('=== REKAP PENGGUNA BERDASARKAN ROLE ===');
+
+        $counts = User::select(
+            'role',
+            DB::raw('COUNT(*) as total')
+        )
+            ->groupBy('role')
+            ->orderBy('role')
+            ->pluck('total', 'role');
+
+        foreach ($validRoles as $role) {
+            $total = $counts->get($role, 0);
+
+            $this->line(
+                "Role [{$role}]: {$total} pengguna"
+            );
         }
 
         $this->line('');
-        $this->info('=== USERS AFTER FIX ===');
-        $all = User::select('id', 'email', 'name', 'role')->get();
-        $all->each(function ($u) {
-            $this->line("#{$u->id} | {$u->email} | {$u->name} | [{$u->role}]");
-        });
+        $this->info('Perbaikan role selesai.');
 
-        $this->line('');
-        $this->info('✅ Fix selesai! Silakan login dengan email + password + role yang benar.');
+        return Command::SUCCESS;
     }
 }
+

@@ -41,7 +41,7 @@
                     <p class="mb-2"><strong>Alamat:</strong> {{ $pengajuan->alamat }}</p>
                     <p class="mb-2"><strong>Alasan:</strong> {{ $pengajuan->alasan }}</p>
                     @if($pengajuan->file_path)
-                        <p class="mb-2"><strong>Berkas:</strong> <a href="{{ Storage::url($pengajuan->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">Download</a></p>
+                        <p class="mb-2"><strong>Berkas:</strong> <a href="{{ route('pengajuan.download', $pengajuan->id) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i>Download Berkas</a></p>
                     @endif
                 </div>
             </div>
