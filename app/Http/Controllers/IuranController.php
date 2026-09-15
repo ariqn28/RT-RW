@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class IuranController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth', 'role:warga']);
+    }
+
     public function index()
     {
         $paymentRequests = PaymentRequest::where('user_id', auth()->id())
@@ -46,7 +51,7 @@ class IuranController extends Controller
             ['payment_method' => $data['payment_method'], 'status' => 'menunggu']
         );
 
-        return redirect()->route('iuran.invoice', $paymentRequest)->with('success', 'Invoice pembayaran berhasil dibuat.');
+        return redirect()->route('iuran.invoice', $paymentRequest)->with('success', 'Metode dipilih. Silakan lanjutkan pembayaran sesuai instruksi.');
     }
 
     public function invoice(PaymentRequest $paymentRequest)

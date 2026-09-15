@@ -14,22 +14,22 @@ class PengajuanSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_register_as_rt_and_redirects_to_rt_dashboard()
+    public function test_public_registration_always_creates_a_warga_account()
     {
         $response = $this->post('/register', [
             'name' => 'Pak RT Baru',
             'email' => 'rt.baru@example.com',
-            'role' => 'rt',
+            'role' => 'admin',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'rt.baru@example.com',
-            'role' => 'rt',
+            'role' => 'warga',
         ]);
 
-        $response->assertRedirect(route('dashboard.rt'));
+        $response->assertRedirect(route('warga.dashboard'));
     }
 
     public function test_unauthorized_user_cannot_download_other_users_document()
@@ -72,4 +72,3 @@ class PengajuanSecurityTest extends TestCase
         $rtResponse->assertStatus(200);
     }
 }
-

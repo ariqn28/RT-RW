@@ -61,8 +61,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:admin,rt,rw')->prefix('admin/konten')->name('admin.content.')->group(function () {
         Route::get('/', [ContentController::class, 'index'])->name('index');
         Route::post('/berita', [ContentController::class, 'storeAnnouncement'])->name('announcements.store');
+        Route::put('/berita/{announcement}', [ContentController::class, 'updateAnnouncement'])->name('announcements.update');
         Route::delete('/berita/{announcement}', [ContentController::class, 'destroyAnnouncement'])->name('announcements.destroy');
         Route::post('/iuran', [ContentController::class, 'storeDue'])->name('dues.store');
+        Route::put('/iuran/{due}', [ContentController::class, 'updateDue'])->name('dues.update');
         Route::delete('/iuran/{due}', [ContentController::class, 'destroyDue'])->name('dues.destroy');
         Route::put('/kontak', [ContentController::class, 'updateContact'])->name('contact.update');
     });
@@ -81,8 +83,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/status/{pengajuan}/reject', [PengajuanController::class, 'reject'])->middleware('role:rt,rw')->name('status.reject');
 
     // Ajukan surat (kalau memang RT/RW yang mengajukan di web)
-    Route::get('/ajukan', [PengajuanController::class, 'create'])->name('ajukan');
-    Route::post('/ajukan', [PengajuanController::class, 'store'])->name('pengajuan.store');
+    Route::get('/ajukan', [PengajuanController::class, 'create'])->middleware('role:warga')->name('ajukan');
+    Route::post('/ajukan', [PengajuanController::class, 'store'])->middleware('role:warga')->name('pengajuan.store');
+    Route::get('/pengajuan/{pengajuan}/edit', [PengajuanController::class, 'editSubmission'])->middleware('role:warga')->name('pengajuan.edit');
+    Route::put('/pengajuan/{pengajuan}', [PengajuanController::class, 'updateSubmission'])->middleware('role:warga')->name('pengajuan.update');
 
     // Status surat
     Route::get('/status/{pengajuan}', [PengajuanController::class, 'show'])->name('status.show');

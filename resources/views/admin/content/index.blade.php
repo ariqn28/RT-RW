@@ -5,7 +5,7 @@
 @if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div><h2 class="h4 mb-1">Iuran &amp; Konten Warga</h2><p class="text-muted mb-0">Terbitkan iuran, pilih metode QRIS/cash/transfer, dan kelola informasi warga.</p></div>
+    <div><h2 class="h4 mb-1">Iuran &amp; Konten Warga</h2><p class="text-muted mb-0">Terbitkan tagihan dan kelola informasi warga. Metode pembayaran dipilih oleh warga.</p></div>
     <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Kembali</a>
 </div>
 
@@ -31,21 +31,7 @@
                 <div class="col-12"><label class="form-label">Keterangan</label><textarea name="description" class="form-control" rows="2"></textarea></div>
                 <div class="col-md-6"><label class="form-label">Batas pembayaran</label><input type="date" name="due_date" class="form-control"></div>
                 <div class="col-md-6"><label class="form-label">Info pembayaran</label><input name="payment_info" class="form-control" placeholder="Transfer atau bayar ke bendahara"></div>
-                <div class="col-12">
-                    <label class="form-label d-block">Metode pembayaran</label>
-                    <div class="d-flex flex-wrap gap-3">
-                        <label><input type="checkbox" name="payment_methods[]" value="qris"> QRIS</label>
-                        <label><input type="checkbox" name="payment_methods[]" value="cash"> Cash</label>
-                        <label><input type="checkbox" name="payment_methods[]" value="transfer"> Transfer</label>
-                    </div>
-                </div>
-                <div class="col-12"><label class="form-label">Gambar QRIS (wajib jika QRIS dipilih, maksimal 4 MB)</label><input type="file" name="qris_image" class="form-control" accept="image/jpeg,image/png,image/webp"></div>
-                <div class="col-12"><hr><strong>Detail transfer</strong> <small class="text-muted">(wajib jika Transfer dipilih)</small></div>
-                <div class="col-md-6"><label class="form-label">Nama bank</label><input name="bank_name" class="form-control" placeholder="BCA, BRI, Mandiri"></div>
-                <div class="col-md-6"><label class="form-label">Nomor rekening</label><input name="account_number" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Nama penerima</label><input name="account_holder" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Nomor BI-FAST (opsional)</label><input name="bifast_number" class="form-control"></div>
-                <div class="col-12"><label class="form-label">Instruksi cash</label><input name="cash_payment_info" class="form-control" placeholder="Datang ke rumah Pak RT setiap sore atau hubungi bendahara"></div>
+                <div class="col-12"><div class="alert alert-light border mb-0"><strong>Pembayaran warga</strong><br><small class="text-muted">Warga dapat memilih QRIS, cash, atau transfer saat menekan tombol bayar tagihan.</small></div></div>
                 <div class="col-12"><hr><strong>Nominal khusus warga</strong> <small class="text-muted">(kosongkan jika iuran berlaku untuk semua warga)</small></div>
                 <div id="resident-assignments" class="col-12"></div>
                 <div class="col-12"><button type="button" class="btn btn-outline-secondary btn-sm" onclick="addResidentAssignment()">+ Tambah warga dan nominal</button></div>
@@ -74,15 +60,46 @@
 <div class="card card-panel p-4 mt-4">
     <h5 class="mb-3">Konten Terbit</h5>
     @foreach($announcements as $announcement)
-        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <span><strong>{{ $announcement->title }}</strong><small class="text-muted d-block">Berita · {{ $announcement->created_at->format('d M Y') }}</small></span>
-            <form method="POST" action="{{ route('admin.content.announcements.destroy', $announcement) }}">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Hapus</button></form>
+        <div class="border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+                <span><strong>{{ $announcement->title }}</strong><small class="text-muted d-block">Berita · {{ $announcement->created_at->format('d M Y') }}</small></span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#edit-news-{{ $announcement->id }}">Ubah</button>
+                    <form method="POST" action="{{ route('admin.content.announcements.destroy', $announcement) }}" onsubmit="return confirm('Hapus berita ini?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Hapus</button></form>
+                </div>
+            </div>
+            <div class="collapse mt-3" id="edit-news-{{ $announcement->id }}">
+                <form method="POST" action="{{ route('admin.content.announcements.update', $announcement) }}" enctype="multipart/form-data" class="row g-2 bg-light p-3 rounded-3">
+                    @csrf @method('PUT')
+                    <div class="col-md-5"><input name="title" value="{{ $announcement->title }}" class="form-control" required maxlength="180"></div>
+                    <div class="col-md-5"><input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp"></div>
+                    <div class="col-md-2 d-grid"><button class="btn btn-primary">Simpan</button></div>
+                    <div class="col-12"><textarea name="body" class="form-control" rows="3" required>{{ $announcement->body }}</textarea></div>
+                </form>
+            </div>
         </div>
     @endforeach
     @foreach($dues as $due)
-        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <span><strong>{{ $due->title }}</strong><small class="text-muted d-block">Iuran · Rp {{ number_format($due->amount, 0, ',', '.') }}</small></span>
-            <form method="POST" action="{{ route('admin.content.dues.destroy', $due) }}">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Hapus</button></form>
+        <div class="border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+                <span><strong>{{ $due->title }}</strong><small class="text-muted d-block">Iuran · Rp {{ number_format($due->amount, 0, ',', '.') }}</small></span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#edit-due-{{ $due->id }}">Ubah</button>
+                    <form method="POST" action="{{ route('admin.content.dues.destroy', $due) }}" onsubmit="return confirm('Hapus iuran ini? Semua invoice terkait juga akan terhapus.')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Hapus</button></form>
+                </div>
+            </div>
+            <div class="collapse mt-3" id="edit-due-{{ $due->id }}">
+                <form method="POST" action="{{ route('admin.content.dues.update', $due) }}" class="row g-2 bg-light p-3 rounded-3">
+                    @csrf @method('PUT')
+                    <div class="col-md-6"><label class="form-label small">Nama iuran</label><input name="title" value="{{ $due->title }}" class="form-control" required maxlength="180"></div>
+                    <div class="col-md-3"><label class="form-label small">Nominal</label><input name="amount" type="number" min="0" value="{{ $due->amount }}" class="form-control" required></div>
+                    <div class="col-md-3"><label class="form-label small">Batas bayar</label><input name="due_date" type="date" value="{{ optional($due->due_date)->format('Y-m-d') }}" class="form-control"></div>
+                    <div class="col-12"><label class="form-label small">Keterangan</label><textarea name="description" class="form-control" rows="2">{{ $due->description }}</textarea></div>
+                    <div class="col-md-8"><label class="form-label small">Info pembayaran</label><input name="payment_info" value="{{ $due->payment_info }}" class="form-control" maxlength="255"></div>
+                    <div class="col-md-2 d-flex align-items-end"><div class="form-check mb-2"><input type="hidden" name="is_active" value="0"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="active-{{ $due->id }}" {{ $due->is_active ? 'checked' : '' }}><label class="form-check-label" for="active-{{ $due->id }}">Aktif</label></div></div>
+                    <div class="col-md-2 d-grid align-items-end"><button class="btn btn-primary">Simpan</button></div>
+                </form>
+            </div>
         </div>
     @endforeach
     @if($announcements->isEmpty() && $dues->isEmpty())<p class="text-muted mb-0">Belum ada konten terbit.</p>@endif
@@ -94,7 +111,7 @@
         <div class="d-flex justify-content-between align-items-center border-bottom py-2">
             <span>
                 <strong>{{ $paymentRequest->user->name }}</strong>
-                <small class="text-muted d-block">{{ $paymentRequest->due->title }} · Rp {{ number_format($paymentRequest->due->amount, 0, ',', '.') }}</small>
+                <small class="text-muted d-block">{{ $paymentRequest->due->title }} · Rp {{ number_format($paymentRequest->due->amountFor($paymentRequest->user_id), 0, ',', '.') }}</small>
             </span>
             <span class="badge text-bg-warning">{{ ['qris' => 'QRIS', 'cash' => 'Cash', 'transfer' => 'Transfer'][$paymentRequest->payment_method] ?? $paymentRequest->payment_method }} · {{ ucfirst($paymentRequest->status) }}</span>
         </div>

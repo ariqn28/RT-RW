@@ -9,9 +9,6 @@
         <p class="text-muted mb-0">Validasi final pengajuan RT & issue surat</p>
     </div>
     <div>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary me-2">
-            <i class="bi bi-people me-1"></i>Manajemen User
-        </a>
         <a href="{{ route('dashboard.rw') }}" class="btn btn-success">
             <i class="bi bi-house me-1"></i>Dashboard
         </a>
@@ -92,7 +89,8 @@
                             <small class="text-muted">{{ $p->nik }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-success">{{ $p->statusHistories->where('status', 'disetujui_rt')->first()->changedBy->name ?? 'RT' }}</span>
+                            @php($rtApproval = $p->statusHistories->firstWhere('status', 'disetujui_rt'))
+                            <span class="badge bg-success">{{ optional(optional($rtApproval)->changedBy)->name ?? 'RT' }}</span>
                         </td>
                         <td>
                             <span class="badge bg-light text-dark px-2 py-1">{{ Str::limit($p->jenis_surat, 18) }}</span>
@@ -103,7 +101,7 @@
                             @endif
                         </td>
                         <td><span class="badge bg-warning text-dark">RT OK</span></td>
-                        <td><small class="text-muted">{{ $p->statusHistories->where('status', 'disetujui_rt')->first()->created_at->format('d M Y H:i') }}</small></td>
+                        <td><small class="text-muted">{{ optional($rtApproval)->created_at?->format('d M Y H:i') ?? '-' }}</small></td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
                                 <a href="{{ route('status.show', $p) }}" class="btn btn-outline-info">

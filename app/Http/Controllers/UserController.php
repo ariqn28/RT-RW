@@ -36,6 +36,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:warga,rt,rw,admin',
+            'nik' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string|max:500',
         ]);
 
         // Gunakan fasad Hash untuk konsistensi
@@ -53,6 +55,10 @@ class UserController extends Controller
         $validated = $request->validate([
             'role' => 'required|in:warga,rt,rw,admin',
         ]);
+
+        if (auth()->id() === $user->id && $validated['role'] !== 'admin') {
+            return back()->with('error', 'Akun admin yang sedang digunakan tidak dapat diturunkan rolenya.');
+        }
 
         $user->update($validated);
 

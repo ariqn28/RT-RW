@@ -61,13 +61,8 @@
                         <label class="form-label">Email</label>
                         <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        <select name="role" class="form-control" required>
-                            <option value="warga" {{ old('role') == 'warga' ? 'selected' : '' }}>Warga</option>
-                            <option value="rt" {{ old('role') == 'rt' ? 'selected' : '' }}>RT</option>
-                            <option value="rw" {{ old('role') == 'rw' ? 'selected' : '' }}>RW</option>
-                        </select>
+                    <div class="alert alert-light border small text-muted">
+                        Pendaftaran ini membuat akun warga. Akun RT, RW, dan admin dibuat melalui Manajemen User.
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>

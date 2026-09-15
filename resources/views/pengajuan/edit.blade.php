@@ -20,6 +20,18 @@
     </div>
     @endif
 
+    @php
+        $role = auth()->user()->role;
+        $options = $role === 'rt' && $pengajuan->status === 'baru'
+            ? ['disetujui_rt' => 'Setujui sebagai RT', 'ditolak' => 'Tolak pengajuan']
+            : ($role === 'rw' && $pengajuan->status === 'disetujui_rt'
+                ? ['diterima' => 'Setujui sebagai RW', 'ditolak' => 'Tolak pengajuan']
+                : []);
+    @endphp
+
+    @if(empty($options))
+        <div class="alert alert-warning mb-0">Status ini tidak dapat diubah pada tahap verifikasi Anda.</div>
+    @else
     <form action="{{ route('status.update', $pengajuan->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -27,14 +39,15 @@
         <div class="mb-3">
             <label class="form-label">Status</label>
             <select name="status" class="form-select" required>
-                <option value="baru" {{ $pengajuan->status == 'baru' ? 'selected' : '' }}>Baru</option>
-                <option value="diterima" {{ $pengajuan->status == 'diterima' ? 'selected' : '' }}>Diterima</option>
-                <option value="ditolak" {{ $pengajuan->status == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                @foreach($options as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
             </select>
         </div>
 
         <button type="submit" class="btn btn-success px-4">Simpan</button>
         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-4">Batal</a>
     </form>
+    @endif
 </div>
 @endsection

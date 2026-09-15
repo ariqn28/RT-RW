@@ -33,6 +33,14 @@
                 <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
             </div>
             <div class="col-md-6">
+                <label class="form-label">NIK <span class="text-muted">(opsional)</span></label>
+                <input type="text" name="nik" value="{{ old('nik') }}" class="form-control" inputmode="numeric" maxlength="20">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Alamat <span class="text-muted">(opsional)</span></label>
+                <input type="text" name="alamat" value="{{ old('alamat') }}" class="form-control" maxlength="500">
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Role</label>
                 <select name="role" class="form-select" required>
                     <option value="">Pilih peran</option>

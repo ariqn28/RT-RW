@@ -27,7 +27,7 @@ use App\Http\Controllers\Api\MobileRiwayatController;
 
 Route::match(['GET', 'POST'], '/mobile/login', [MobileAuthController::class, 'mobileLogin'])->middleware('throttle:10,1');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'warga'])->group(function () {
     Route::get('/profile', [MobileProfileController::class, 'index']);
     Route::put('/profile', [MobileProfileController::class, 'update']);
 

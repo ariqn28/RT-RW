@@ -10,11 +10,14 @@
         <p class="text-gray-500 text-sm">Lengkapi data di bawah ini untuk permohonan Anda.</p>
     </div>
 
-    @if ($errors->has('file'))
-    <div class="alert alert-danger">
-        {{ $errors->first('file') }}
-    </div>
-@endif
+    @if ($errors->any())
+        <div class="rounded-2xl bg-red-50 p-4 text-sm text-red-700">
+            <p class="font-bold">Mohon periksa kembali data berikut:</p>
+            <ul class="mt-1 list-disc pl-5">
+                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
 
     <form action="{{ route('pengajuan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
@@ -25,12 +28,9 @@
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Jenis Surat</label>
                 <select name="jenis_surat" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all" required>
                     <option value="">-- Pilih Jenis Surat --</option>
-                    <option value="Surat Keterangan Domisili">Surat Keterangan Domisili</option>
-                    <option value="Surat Pengantar">Surat Pengantar</option>
-                    <option value="Surat Keterangan Tidak Mampu">Surat Keterangan Tidak Mampu</option>
-                    <option value="Surat Izin Keramaian">Surat Izin Keramaian</option>
-                    <option value="Surat Keterangan Usaha">Surat Keterangan Usaha</option>
-                    <option value="Lainnya">Lainnya</option>
+                    @foreach (['Surat Keterangan Domisili', 'Surat Pengantar', 'Surat Keterangan Tidak Mampu', 'Surat Izin Keramaian', 'Surat Keterangan Usaha', 'Lainnya'] as $jenis)
+                        <option value="{{ $jenis }}" {{ old('jenis_surat') === $jenis ? 'selected' : '' }}>{{ $jenis }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -41,17 +41,17 @@
 
             <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">NIK</label>
-                <input type="number" name="nik" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+                <input type="text" name="nik" value="{{ old('nik', auth()->user()->nik) }}" inputmode="numeric" maxlength="20" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alamat</label>
-                <input type="text" name="alamat" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
+                <input type="text" name="alamat" value="{{ old('alamat', auth()->user()->alamat) }}" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Alasan Pengajuan</label>
-                <textarea name="alasan" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" required>{{ old('alasan') }}</textarea>
+                <textarea id="alasanTextarea" name="alasan" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" rows="3" required>{{ old('alasan') }}</textarea>
             </div>
 
             <div>

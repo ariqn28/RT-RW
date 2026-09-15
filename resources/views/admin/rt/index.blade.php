@@ -9,9 +9,6 @@
         <p class="text-muted mb-0">Kelola pengajuan warga & approve RT</p>
     </div>
     <div>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary me-2">
-            <i class="bi bi-people me-1"></i>Manajemen User
-        </a>
         <a href="{{ route('dashboard.rt') }}" class="btn btn-success">
             <i class="bi bi-house me-1"></i>Dashboard
         </a>
@@ -64,10 +61,10 @@
             <div class="col-auto">
                 <select class="form-select form-select-sm" id="statusFilter">
                     <option value="">Semua Status</option>
-                    <option value="baru">Baru</option>
-                    <option value="disetujui_rt">RT Done</option>
-                    <option value="diterima">RW Done</option>
-                    <option value="ditolak">Ditolak</option>
+                    <option value="baru" {{ request('status') === 'baru' ? 'selected' : '' }}>Baru</option>
+                    <option value="disetujui_rt" {{ request('status') === 'disetujui_rt' ? 'selected' : '' }}>Disetujui RT</option>
+                    <option value="diterima" {{ request('status') === 'diterima' ? 'selected' : '' }}>Selesai</option>
+                    <option value="ditolak" {{ request('status') === 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </div>
         </div>

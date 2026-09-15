@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class MobileAuthController extends Controller
 {
@@ -30,14 +31,9 @@ class MobileAuthController extends Controller
             'device_name' => 'nullable|string|max:255',
         ]);
 
-        $user = Auth::getProvider()->retrieveByCredentials([
-            'email' => $validated['email'],
-        ]);
+        $user = User::where('email', $validated['email'])->first();
 
-        if (! $user || ! Auth::attempt([
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-        ])) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email atau password salah.',
@@ -45,12 +41,11 @@ class MobileAuthController extends Controller
             ], 401);
         }
 
-        // Izinkan login mobile untuk warga, rt, dan rw
-        if (! in_array($user->role, ['warga', 'rt', 'rw'], true)) {
+        if ($user->role !== 'warga') {
             return response()->json([
                 'success' => false,
                 'message' => 'Akun ini tidak dapat digunakan untuk login mobile.',
-                'business_flow' => 'Login mobile hanya tersedia untuk akun warga, RT, dan RW.',
+                'business_flow' => 'Login mobile hanya tersedia untuk akun warga.',
             ], 403);
         }
 

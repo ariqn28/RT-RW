@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($accounts as $account) {
-            User::updateOrCreate(
+            User::firstOrCreate(
                 ['email' => $account['email']],
                 array_merge($account, ['password' => $password])
             );

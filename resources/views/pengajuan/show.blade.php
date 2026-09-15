@@ -8,6 +8,9 @@
             <p class="text-muted mb-0">Lihat perkembangan pengajuan surat secara detail.</p>
         </div>
         <div>
+            @if(auth()->user()->role === 'warga' && $pengajuan->user_id === auth()->id() && $pengajuan->status === 'baru')
+                <a href="{{ route('pengajuan.edit', $pengajuan) }}" class="btn btn-primary me-2">Ubah Pengajuan</a>
+            @endif
             @if(!$isAdmin && auth()->check() && in_array(auth()->user()->role, ['rt', 'rw']))
                 @php
                     $showApprove = (auth()->user()->role === 'rt' && $pengajuan->status === 'baru') ||
@@ -24,7 +27,6 @@
                         <button type="submit" class="btn btn-danger">Tolak</button>
                     </form>
                 @endif
-                <a href="{{ route('status.edit', $pengajuan->id) }}" class="btn btn-primary me-2">Ubah Status</a>
             @endif
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Kembali</a>
         </div>

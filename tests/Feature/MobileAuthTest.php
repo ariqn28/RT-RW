@@ -52,4 +52,21 @@ class MobileAuthTest extends TestCase
             ->assertJsonPath('message', 'Silakan gunakan metode POST untuk login mobile.')
             ->assertJsonPath('hint', 'Kirim request POST ke endpoint ini dari aplikasi mobile atau browser.');
     }
+
+    public function test_rt_account_cannot_login_to_warga_mobile_api()
+    {
+        User::factory()->create([
+            'email' => 'rt.api@example.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'rt',
+        ]);
+
+        $response = $this->postJson('/api/mobile/login', [
+            'email' => 'rt.api@example.com',
+            'password' => '12345678',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'Akun ini tidak dapat digunakan untuk login mobile.');
+    }
 }

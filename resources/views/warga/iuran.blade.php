@@ -25,7 +25,7 @@
             <div class="mt-2 flex items-center justify-between text-xs">
                 @php($selectedRequest = $paymentRequests->get($due->id))
                 <span class="font-semibold {{ $selectedRequest ? 'text-amber-600' : 'text-red-600' }}">{{ $selectedRequest ? 'Menunggu konfirmasi' : 'Belum dibayar' }}</span>
-                <span class="text-gray-500">Total tagihan</span>
+                <span class="text-gray-500">Tagihan akun Anda</span>
             </div>
             @if($due->description)<p class="text-sm text-gray-600 mt-2">{{ $due->description }}</p>@endif
             @if($due->due_date)<p class="text-xs text-amber-700 mt-3">Batas pembayaran: {{ $due->due_date->format('d M Y') }}</p>@endif
@@ -52,7 +52,7 @@
                                     <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 font-bold text-xs">{{ strtoupper(substr($method, 0, 1)) }}</span>
                                     <span>
                                         <span class="block font-semibold">{{ ['qris' => 'QRIS', 'cash' => 'Cash', 'transfer' => 'Transfer'][$method] ?? $method }}</span>
-                                        <span class="block text-[10px] text-gray-500">Bayar sesuai instruksi pengurus</span>
+                                        <span class="block text-[10px] text-gray-500">Pilih metode, lalu lanjutkan ke instruksi pembayaran</span>
                                     </span>
                                 </span>
                                 <input type="radio" name="payment_method" value="{{ $method }}" class="sr-only" {{ $selectedMethod === $method ? 'checked' : '' }} required>
@@ -60,9 +60,9 @@
                             </label>
                         @endforeach
                     </div>
-                    <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-600 px-3 py-3 text-sm font-bold text-white">{{ $selectedMethod ? 'Ubah pilihan pembayaran' : 'Lanjutkan pembayaran' }}</button>
+                    <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-600 px-3 py-3 text-sm font-bold text-white">Bayar Tagihan Sekarang</button>
                     @if($selectedMethod)
-                        <a href="{{ route('iuran.invoice', $selectedRequest) }}" class="mt-2 block text-center text-xs font-bold text-emerald-700">Lihat invoice pembayaran</a>
+                        <a href="{{ route('iuran.invoice', $selectedRequest) }}" class="mt-2 block text-center text-xs font-bold text-emerald-700">Lihat instruksi pembayaran</a>
                     @endif
                 </form>
                 @if($selectedMethod === 'qris' && $due->qris_image_path)

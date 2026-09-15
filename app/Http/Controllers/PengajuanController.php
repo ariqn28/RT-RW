@@ -71,8 +71,8 @@ class PengajuanController extends Controller
 
     // 4. Logika untuk RW
     if ($user->role === 'rw') {
-        $pengajuan = Pengajuan::with('user')->whereIn('status', ['disetujui_rt', 'diterima'])->latest()->paginate(10);
-        $rtPending = Pengajuan::where('status', 'disetujui_rt')->with('user')->latest()->take(5)->get();
+        $pengajuan = Pengajuan::with(['user', 'statusHistories.changedBy'])->whereIn('status', ['disetujui_rt', 'diterima'])->latest()->paginate(10);
+        $rtPending = Pengajuan::where('status', 'disetujui_rt')->with(['user', 'statusHistories.changedBy'])->latest()->take(5)->get();
         $counts = [
             'rt_pending' => Pengajuan::where('status', 'disetujui_rt')->count(),
             'approved' => Pengajuan::where('status', 'diterima')->count(),
@@ -105,11 +105,7 @@ public function getStats()
 
     public function store(Request $request)
     {
-        Log::info('=== STORE PENGAJUAN START ===', [
-            'user_id' => auth()->id(),
-            'has_file' => $request->hasFile('file'),
-            'all_data' => $request->except(['_token']),
-        ]);
+        Log::info('Menerima pengajuan baru.', ['user_id' => auth()->id(), 'has_file' => $request->hasFile('file')]);
 
         try {
            $validated = $request->validate([
@@ -130,14 +126,6 @@ public function getStats()
             if ($request->hasFile('file')) {
                 Log::info('Processing file upload');
                 $file = $request->file('file');
-
-                Log::info('File info', [
-                    'name' => $file->getClientOriginalName(),
-                    'size' => $file->getSize(),
-                    'mime' => $file->getMimeType(),
-                    'valid' => $file->isValid(),
-                    'error' => $file->getError(),
-                ]);
 
                 if ($file->getSize() > 2048 * 1024) {
                     Log::warning('File too large: ' . $file->getSize());
@@ -190,23 +178,18 @@ return redirect()->route('warga.dashboard')
             Log::warning('Validation failed', ['errors' => $e->errors()]);
             throw $e;
         } catch (\Exception $e) {
-            Log::error('=== STORE PENGAJUAN FAILED ===', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('Gagal menyimpan pengajuan.', ['exception' => $e]);
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                    'message' => 'Terjadi kesalahan saat menyimpan pengajuan. Silakan coba lagi.',
                 ], 500);
             }
 
             return redirect()->back()
                              ->withInput()
-                             ->with('error', 'Terjadi kesalahan saat menyimpan pengajuan: ' . $e->getMessage());
+                             ->with('error', 'Terjadi kesalahan saat menyimpan pengajuan. Silakan coba lagi.');
         }
     }
 
@@ -222,6 +205,58 @@ return redirect()->route('warga.dashboard')
         $isAdmin = $user->role === 'admin';
 
         return view('pengajuan.show', compact('pengajuan', 'isAdmin'));
+    }
+
+    public function editSubmission(Pengajuan $pengajuan)
+    {
+        $this->ensureEditableByOwner($pengajuan);
+
+        return view('pengajuan.edit_submission', compact('pengajuan'));
+    }
+
+    public function updateSubmission(Request $request, Pengajuan $pengajuan)
+    {
+        $this->ensureEditableByOwner($pengajuan);
+
+        $validated = $request->validate([
+            'jenis_surat' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'nik' => 'required|string|max:20',
+            'alamat' => 'required|string|max:255',
+            'alasan' => 'required|string|min:10',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $extension = $file->getClientOriginalExtension();
+            $fileName = (string) Str::uuid() . ($extension ? '.' . strtolower($extension) : '');
+            $validated['file_path'] = $file->storeAs('pengajuan_files', $fileName, 'local');
+
+            if ($pengajuan->file_path && Storage::disk('local')->exists($pengajuan->file_path)) {
+                Storage::disk('local')->delete($pengajuan->file_path);
+            }
+        }
+
+        unset($validated['file']);
+        $pengajuan->update($validated);
+        $pengajuan->statusHistories()->create([
+            'status' => 'baru',
+            'changed_by' => auth()->id(),
+            'note' => 'Data pengajuan diperbarui oleh warga.',
+        ]);
+
+        return redirect()->route('status.show', $pengajuan)
+            ->with('success', 'Pengajuan berhasil diperbarui.');
+    }
+
+    private function ensureEditableByOwner(Pengajuan $pengajuan): void
+    {
+        abort_unless(
+            $pengajuan->user_id === auth()->id() && $pengajuan->status === 'baru',
+            403,
+            'Pengajuan hanya dapat diubah oleh pemiliknya selama masih berstatus baru.'
+        );
     }
 
     public function history()
@@ -287,16 +322,14 @@ return redirect()->route('warga.dashboard')
             'status' => 'required|in:baru,disetujui_rt,diterima,ditolak',
         ]);
 
-        // RT tidak boleh langsung menyelesaikan ke 'diterima' tanpa verifikasi RW
-        if ($role === 'rt' && $validated['status'] === 'diterima') {
-            return redirect()->route('status.show', $pengajuan->id)
-                ->with('error', 'Persetujuan akhir hanya dapat dilakukan oleh RW.');
-        }
+        $allowedTransitions = [
+            'rt' => ['baru' => ['disetujui_rt', 'ditolak']],
+            'rw' => ['disetujui_rt' => ['diterima', 'ditolak']],
+        ];
 
-        // RW hanya boleh menyetujui tahap akhir jika status sudah disetujui_rt
-        if ($role === 'rw' && $validated['status'] === 'diterima' && $pengajuan->status !== 'disetujui_rt') {
+        if (! in_array($validated['status'], $allowedTransitions[$role][$pengajuan->status] ?? [], true)) {
             return redirect()->route('status.show', $pengajuan->id)
-                ->with('error', 'Pengajuan harus disetujui RT terlebih dahulu sebelum diterima oleh RW.');
+                ->with('error', 'Perubahan status tidak sesuai dengan tahapan verifikasi surat.');
         }
 
         if ($pengajuan->status !== $validated['status']) {
@@ -373,9 +406,15 @@ return redirect()->route('warga.dashboard')
 
         $role = auth()->user()->role;
 
-        // hanya RT/RW yang boleh menolak (route sudah membatasi, tapi tetap amankan)
+        // Hanya RT/RW yang boleh menolak pada tahapnya masing-masing.
         if (!in_array($role, ['rt', 'rw'])) {
             abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        if (($role === 'rt' && $pengajuan->status !== 'baru')
+            || ($role === 'rw' && $pengajuan->status !== 'disetujui_rt')) {
+            return redirect()->route('status.show', $pengajuan->id)
+                ->with('error', 'Pengajuan tidak dapat ditolak pada tahap ini.');
         }
 
         $pengajuan->update(['status' => 'ditolak']);
