@@ -24,6 +24,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
+            'role' => 'required|in:warga,rt,rw',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -31,7 +32,7 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'warga',
+            'role' => strtolower(trim($validated['role'])),
         ]);
 
         Auth::login($user);

@@ -6,7 +6,6 @@ use App\Models\Pengajuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -14,22 +13,36 @@ class PengajuanSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_public_registration_always_creates_a_warga_account()
+    public function test_public_registration_assigns_selected_role()
     {
         $response = $this->post('/register', [
             'name' => 'Pak RT Baru',
             'email' => 'rt.baru@example.com',
-            'role' => 'admin',
+            'role' => 'rt',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'rt.baru@example.com',
-            'role' => 'warga',
+            'role' => 'rt',
         ]);
 
-        $response->assertRedirect(route('warga.dashboard'));
+        $response->assertRedirect(route('dashboard.rt'));
+    }
+
+    public function test_public_registration_rejects_invalid_role()
+    {
+        $response = $this->post('/register', [
+            'name' => 'Hacker',
+            'email' => 'hacker@example.com',
+            'role' => 'admin',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertSessionHasErrors('role');
+        $this->assertDatabaseMissing('users', ['email' => 'hacker@example.com']);
     }
 
     public function test_unauthorized_user_cannot_download_other_users_document()

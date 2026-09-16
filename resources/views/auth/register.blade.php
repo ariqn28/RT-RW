@@ -363,6 +363,18 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label label-auth" for="regRole">Role</label>
+                    <div class="input-group input-group-auth">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <select name="role" class="form-select" id="regRole" required>
+                            <option value="warga" {{ old('role') == 'warga' ? 'selected' : '' }}>Warga</option>
+                            <option value="rt" {{ old('role') == 'rt' ? 'selected' : '' }}>RT</option>
+                            <option value="rw" {{ old('role') == 'rw' ? 'selected' : '' }}>RW</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label label-auth" for="regPassword">Password</label>
                     <div class="input-group input-group-auth">
                         <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
